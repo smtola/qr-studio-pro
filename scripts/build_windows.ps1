@@ -1,9 +1,3 @@
-<#
-.SYNOPSIS  Build QR Studio Pro on Windows 10/11: PyInstaller app, installer (.exe) and optional portable .exe.
-.EXAMPLE   powershell -ExecutionPolicy Bypass -File scripts\build_windows.ps1
-.EXAMPLE   powershell -ExecutionPolicy Bypass -File scripts\build_windows.ps1 -Portable -SkipTests
-Output goes to dist\ :  QRStudioPro\ (app folder), QRStudioPro-<version>-Setup.exe, QRStudioPro-portable.exe
-#>
 param([switch]$Portable, [switch]$SkipTests, [switch]$SkipInstaller)
 $ErrorActionPreference = "Stop"
 Set-Location (Split-Path -Parent $PSScriptRoot)
@@ -44,14 +38,15 @@ $env:QRSP_ONEFILE = ""
 if ($LASTEXITCODE) { Fail "PyInstaller failed" }
 
 Step "Self-test of the built executable"
-& "dist\QRStudioPro\QRStudioPro.exe" --selftest
-# GUI executables have no console, so the report is also written to %APPDATA%\QRStudioPro\selftest.txt
+# A windowed (GUI) exe is started asynchronously by PowerShell, so wait for it explicitly. It has no console,
+# so it writes its report to %APPDATA%\QRStudioPro\selftest.txt; delete any old report first.
 $report = Join-Path $env:APPDATA "QRStudioPro\selftest.txt"
-if (-not (Test-Path $report) -or -not (Select-String -Path $report -Pattern "RESULT: OK" -Quiet)) {
-  if (Test-Path $report) { Get-Content $report }
-  Fail "The built app failed its self-test."
+Remove-Item $report -ErrorAction SilentlyContinue
+$proc = Start-Process -FilePath "dist\QRStudioPro\QRStudioPro.exe" -ArgumentList "--selftest" -Wait -PassThru
+if (Test-Path $report) { Get-Content $report }
+if ($proc.ExitCode -ne 0 -or -not (Test-Path $report) -or -not (Select-String -Path $report -Pattern "RESULT: OK" -Quiet)) {
+  Fail "The built app failed its self-test (exit code $($proc.ExitCode))."
 }
-Get-Content $report
 
 if ($Portable) {
   Step "Building portable single-file executable"
