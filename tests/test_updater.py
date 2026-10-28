@@ -38,10 +38,11 @@ def test_manifest_rejects_bad_input():
     assert info.assets == {}
 
 
-def test_check_requires_https_and_url():
+def test_check_requires_https_and_url(monkeypatch):
+    monkeypatch.setattr(updater, "manifest_url", lambda: "")    # independent of the configured feed
     with pytest.raises(UpdateError):
         check_for_update("http://example.com/update.json")
-    with pytest.raises(UpdateError):
+    with pytest.raises(UpdateError, match="not set up"):
         check_for_update("")
 
 

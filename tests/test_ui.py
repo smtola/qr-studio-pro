@@ -161,7 +161,9 @@ def test_version_visible_and_update_dialog_appears(window, qapp, monkeypatch):
 
 def test_manual_check_without_feed_explains(window, monkeypatch):
     from PySide6.QtWidgets import QMessageBox
+    from src.ui import update_dialog as ud
     monkeypatch.delenv("QRSP_UPDATE_URL", raising=False)
+    monkeypatch.setattr(ud, "manifest_url", lambda: "")    # simulate a build with no feed configured
     msgs = []
     monkeypatch.setattr(QMessageBox, "information", lambda *a, **k: msgs.append(a[2]))
     window.updates.check(manual=True)
