@@ -8,5 +8,4 @@ COPYRIGHT = "Copyright (c) 2026 TALA QR Studio"
 PROJECT_EXT = ".qrsp"
 
 # ---- In-app updates ------------------------------------------------------------------------------
-
-UPDATE_MANIFEST_URL = "https://github.com/smtola/qr-studio-pro.git/releases/latest/download/update.json"
+UPDATE_MANIFEST_URL = "https://github.com/smtola/qr-studio-pro/releases/latest/download/update.json"
