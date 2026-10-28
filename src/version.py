@@ -3,7 +3,7 @@ APP_NAME = "QR Studio Pro"
 APP_SLUG = "qr-studio-pro"
 ORG_NAME = "QR Studio"
 APP_ID = "com.qrstudio.qrstudiopro"
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 COPYRIGHT = "Copyright (c) 2026 TALA QR Studio"
 PROJECT_EXT = ".qrsp"
 
