@@ -1,0 +1,6 @@
+# Runtime dependencies (pinned to the versions this project was developed and tested with)
+PySide6-Essentials==6.12.0
+qrcode==8.2
+pillow==12.3.0
+reportlab==5.0.1
+certifi==2026.10.18

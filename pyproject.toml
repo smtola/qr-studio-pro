@@ -1,0 +1,12 @@
+[project]
+name = "qr-studio-pro"
+dynamic = ["version"]
+description = "Offline desktop QR code designer with logo, colour and frame customisation"
+requires-python = ">=3.12"
+readme = "README.md"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"
+markers = ["ui: needs a Qt platform plugin (runs offscreen)"]

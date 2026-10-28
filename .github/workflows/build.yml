@@ -1,0 +1,28 @@
+name: build
+on:
+  workflow_dispatch:
+  push:
+    tags: ["v*"]
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: choco install innosetup -y --no-progress
+      - run: powershell -ExecutionPolicy Bypass -File scripts/build_windows.ps1 -Portable
+      - uses: actions/upload-artifact@v4
+        with: { name: windows, path: "dist/*.exe" }
+  macos:
+    strategy:
+      matrix:
+        os: [macos-14, macos-13]     # Apple Silicon (arm64) and Intel (x86_64)
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: scripts/build_macos.sh
+      - uses: actions/upload-artifact@v4
+        with: { name: "macos-${{ matrix.os }}", path: "dist/*.dmg" }

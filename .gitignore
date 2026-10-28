@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+.venv*/
+build/
+dist/
+.pytest_cache/
+tests/.userdata/
+packaging/version_info.txt
