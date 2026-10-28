@@ -1,3 +1,20 @@
+"""Update checking and installer download (no Qt, so it is unit-testable).
+
+Privacy: the only network request made for a check is an HTTPS GET of the update manifest; no user data, content,
+logos or identifiers are sent. Downloads are verified with SHA-256 before anything is started.
+
+Manifest (update.json):
+{
+  "version": "1.1.0",
+  "notes": "What is new ...",
+  "page": "https://example.com/releases",            # optional, opened if no installer matches this computer
+  "assets": {
+    "windows":      {"url": "https://.../QRStudioPro-1.1.0-Setup.exe",        "sha256": "<hex>"},
+    "macos-arm64":  {"url": "https://.../QRStudioPro-1.1.0-arm64.dmg",        "sha256": "<hex>"},
+    "macos-x86_64": {"url": "https://.../QRStudioPro-1.1.0-x86_64.dmg",       "sha256": "<hex>"}
+  }
+}
+"""
 from __future__ import annotations
 
 import hashlib

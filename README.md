@@ -19,10 +19,10 @@ Preview and every export format are drawn from **one shared scene description** 
 
 macOS / Linux:
 ```bash
-**python3 -m venv .venv && source .venv/bin/activate
+python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements-dev.txt
-python app.py                
-python app.py --selftest     
+python app.py                 # start the app
+python app.py --selftest      # headless check: renders + exports PNG/JPG/SVG/PDF, scans the PNG
 QT_QPA_PLATFORM=offscreen python -m pytest      # test suite
 ```
 Windows (PowerShell):
@@ -91,4 +91,3 @@ src/utils/              validation · paths · logging
 tests/                  pytest (unit, export, UI offscreen) – decodes exports with OpenCV as an independent scanner
 packaging/ scripts/ docs/
 ```
-****# qr-studio-pro
