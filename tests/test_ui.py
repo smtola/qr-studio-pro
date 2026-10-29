@@ -36,7 +36,7 @@ def window(qapp, tmp_path, monkeypatch):
 
 def test_preview_renders_on_start(window):
     assert window.state.last_prep is not None
-    assert window.preview.canvas.image is not None
+    assert window.preview.canvas.pixmap is not None
 
 
 def test_logo_upload_forces_high_ecc_and_centres_logo(window, qapp, logo_png):
@@ -163,5 +163,8 @@ def test_manual_check_without_feed_explains(window, monkeypatch):
     from PySide6.QtWidgets import QMessageBox
     from src.ui import update_dialog as ud
     monkeypatch.delenv("QRSP_UPDATE_URL", raising=False)
-    monkeypatch.setattr(ud, "manifest_url", lambda: "")
+    monkeypatch.setattr(ud, "manifest_url", lambda: "")    # simulate a build with no feed configured
     msgs = []
+    monkeypatch.setattr(QMessageBox, "information", lambda *a, **k: msgs.append(a[2]))
+    window.updates.check(manual=True)
+    assert msgs and "not set up" in msgs[0]

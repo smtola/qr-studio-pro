@@ -80,22 +80,40 @@ def _gradient_image(g: Gradient, size: tuple[int, int], ox: int, oy: int, c: _Ct
     return ImageOps.colorize(ramp, hex_to_rgb(g.c0), hex_to_rgb(g.c1)).convert("RGBA")
 
 
+STRIP_ROWS = 48
+
+
+def _composite(canvas: Image.Image, layer: Image.Image, ox: int, oy: int) -> None:
+    """alpha_composite in thin horizontal strips.
+
+    Pillow's alpha_composite keeps Python's global lock for the whole call (a 3000x4000 layer blocks every other
+    thread for ~150 ms). Strips of a few milliseconds let the GUI thread run in between, which keeps the window
+    responsive while a preview renders in the background. Output is identical."""
+    w, h = layer.size
+    if h <= STRIP_ROWS:
+        canvas.alpha_composite(layer, (ox, oy))
+        return
+    for y in range(0, h, STRIP_ROWS):
+        canvas.alpha_composite(layer.crop((0, y, w, min(h, y + STRIP_ROWS))), (ox, oy + y))
+
+
 def _composite_mask(canvas: Image.Image, mask: Image.Image, ox: int, oy: int, fill) -> None:
-    """Alpha-composite `fill` (colour hex or RGBA image) through `mask` at (ox, oy)."""
+    """Alpha-composite `fill` (colour hex or RGBA image the size of `mask`) through `mask` at (ox, oy)."""
+    cw, ch = canvas.size
+    x0, y0 = max(ox, 0), max(oy, 0)
+    x1, y1 = min(ox + mask.width, cw), min(oy + mask.height, ch)
+    if x1 <= x0 or y1 <= y0:
+        return
+    box = (x0 - ox, y0 - oy, x1 - ox, y1 - oy)
+    clipped = box != (0, 0, mask.width, mask.height)
+    if clipped:
+        mask = mask.crop(box)
     if isinstance(fill, str):
         layer = Image.new("RGBA", mask.size, hex_to_rgb(fill) + (255,))
     else:
-        layer = fill
+        layer = fill.crop(box) if clipped else fill
     layer.putalpha(mask)
-    # alpha_composite needs the destination inside the canvas -> crop manually
-    dx, dy = max(0, -ox), max(0, -oy)
-    if dx or dy:
-        layer = layer.crop((dx, dy, layer.width, layer.height))
-        mask = mask.crop((dx, dy, mask.width, mask.height))
-    ox, oy = max(ox, 0), max(oy, 0)
-    w, h = min(layer.width, canvas.width - ox), min(layer.height, canvas.height - oy)
-    if w > 0 and h > 0:
-        canvas.alpha_composite(layer.crop((0, 0, w, h)), (ox, oy))
+    _composite(canvas, layer, x0, y0)
 
 
 def _perimeter(s: Shape, step: float) -> list[tuple[float, float]]:
@@ -243,6 +261,12 @@ def flatten(img: Image.Image, color: str = "#FFFFFF") -> Image.Image:
 
 
 def _composite_mask_img(out: Image.Image, img: Image.Image, x0: int, y0: int) -> None:
-    layer = Image.new("RGBA", out.size, (0, 0, 0, 0))
-    layer.paste(img, (x0, y0))
-    out.alpha_composite(layer)
+    """Draw `img` at (x0, y0), clipped to `out` (only the visible part is touched)."""
+    cw, ch = out.size
+    sx0, sy0 = max(x0, 0), max(y0, 0)
+    sx1, sy1 = min(x0 + img.width, cw), min(y0 + img.height, ch)
+    if sx1 <= sx0 or sy1 <= sy0:
+        return
+    if (sx0, sy0, sx1, sy1) != (x0, y0, x0 + img.width, y0 + img.height):
+        img = img.crop((sx0 - x0, sy0 - y0, sx1 - x0, sy1 - y0))
+    _composite(out, img, sx0, sy0)

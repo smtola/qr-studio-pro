@@ -3,8 +3,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from PySide6.QtCore import Qt
-from PySide6.QtWidgets import (QApplication, QMessageBox, QPushButton, QFileDialog, QVBoxLayout, QWidget)
+from PySide6.QtCore import QEventLoop, QObject, QRunnable, Qt, QThreadPool, Signal
+from PySide6.QtWidgets import (QMessageBox, QProgressDialog, QPushButton, QFileDialog, QVBoxLayout, QWidget)
 
 from ..core.export_manager import EXT, ExportError, export_to_file, prepare
 from ..models.project_settings import EXPORT_FORMATS
@@ -27,6 +27,27 @@ def default_filename(state: AppState, fmt: str) -> str:
     base = {"url": c.url, "text": c.text, "email": c.email_to, "phone": c.phone, "sms": c.sms_number,
             "wifi": c.wifi_ssid, "vcard": c.vcard_name}.get(c.type, "")
     return f"qr-code-{slugify(base, 'design')}{EXT[fmt]}"
+
+
+class _ExportSig(QObject):
+    done = Signal(object, str)
+
+
+class _ExportJob(QRunnable):
+    def __init__(self, settings, target: Path, overwrite: bool, fmt: str, sig: _ExportSig):
+        super().__init__()
+        self.a, self.sig = (settings, target, overwrite, fmt), sig
+
+    def run(self) -> None:
+        settings, target, overwrite, fmt = self.a
+        try:
+            self.sig.done.emit(export_to_file(settings, target, overwrite=overwrite, fmt=fmt), "")
+        except (ValidationError, ExportError, FileExistsError, OSError) as e:
+            log.warning("export failed: %s", e)
+            self.sig.done.emit(None, str(e) or "The file could not be saved.")
+        except Exception as e:  # noqa: BLE001
+            log.exception("export crashed")
+            self.sig.done.emit(None, f"Export failed: {e}")
 
 
 class ExportSection(QWidget):
@@ -125,17 +146,25 @@ def run_export(parent: QWidget, state: AppState, prefs: AppPrefs) -> bool:
         if r != QMessageBox.StandardButton.Yes:
             return False
         overwrite = True
-    QApplication.setOverrideCursor(Qt.CursorShape.WaitCursor)
-    try:
-        res = export_to_file(s, target, overwrite=overwrite, fmt=out_fmt)
-    except (ValidationError, ExportError, FileExistsError, OSError) as e:
-        QApplication.restoreOverrideCursor()
-        log.warning("export failed: %s", e)
-        QMessageBox.critical(parent, "Export failed", str(e) or "The file could not be saved.")
+    # Run the export on a worker thread; the dialog keeps the window responsive (no frozen UI).
+    sig, box = _ExportSig(), {}
+    loop = QEventLoop()
+    sig.done.connect(lambda r, e: (box.update(res=r, err=e), loop.quit()))
+    dlg = QProgressDialog(f"Exporting {target.name}…", None, 0, 0, parent)
+    dlg.setWindowTitle("Exporting")
+    dlg.setWindowModality(Qt.WindowModality.WindowModal)
+    dlg.setMinimumDuration(0)
+    dlg.setAutoClose(False)
+    dlg.setAutoReset(False)
+    dlg.show()
+    QThreadPool.globalInstance().start(_ExportJob(s.clone(), target, overwrite, out_fmt, sig))
+    loop.exec()
+    dlg.close()
+    dlg.deleteLater()
+    res = box.get("res")
+    if res is None:
+        QMessageBox.critical(parent, "Export failed", box.get("err") or "The file could not be saved.")
         return False
-    finally:
-        while QApplication.overrideCursor() is not None:
-            QApplication.restoreOverrideCursor()
     prefs.last_export_dir = str(res.path.parent)
     prefs.save()
     msg = f"Saved {res.path.name}  ({res.width} × {res.height} px, {res.size_bytes / 1024:.0f} KB)"

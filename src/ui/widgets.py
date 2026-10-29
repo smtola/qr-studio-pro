@@ -138,17 +138,36 @@ class SliderRow(QWidget):
 
 
 class CollapsibleSection(QFrame):
-    """Card with a clickable header; body is shown/hidden."""
+    """Card with an icon + title header and a chevron; body is shown/hidden."""
     toggled = Signal(bool)
 
-    def __init__(self, title: str, body: QWidget, expanded: bool = True, parent=None):
+    def __init__(self, title: str, body: QWidget, expanded: bool = True, icon_name: str = "", parent=None):
         super().__init__(parent)
         self.setObjectName("card")
         self._title = title
+        self._icon_name = icon_name
+        self._expanded = expanded
+        self._color = "#68708A"
         self.header = QPushButton()
         self.header.setObjectName("sectionHeader")
         self.header.setCursor(Qt.CursorShape.PointingHandCursor)
         self.header.setAccessibleName(f"{title} section")
+        self.header.setMinimumHeight(46)
+        hl = QHBoxLayout(self.header)
+        hl.setContentsMargins(14, 0, 14, 0)
+        hl.setSpacing(10)
+        self._ic = QLabel()
+        self._ic.setFixedSize(20, 20)
+        self._lbl = QLabel(title)
+        self._lbl.setObjectName("h2")
+        self._chev = QLabel()
+        self._chev.setFixedSize(18, 18)
+        for w in (self._ic, self._lbl, self._chev):
+            w.setAttribute(Qt.WidgetAttribute.WA_TransparentForMouseEvents)
+        self._ic.setVisible(bool(icon_name))
+        hl.addWidget(self._ic)
+        hl.addWidget(self._lbl, 1)
+        hl.addWidget(self._chev)
         self.body = body
         lay = QVBoxLayout(self)
         lay.setContentsMargins(4, 4, 4, 4)
@@ -156,12 +175,21 @@ class CollapsibleSection(QFrame):
         lay.addWidget(self.header)
         wrap = QWidget()
         wl = QVBoxLayout(wrap)
-        wl.setContentsMargins(12, 0, 12, 12)
+        wl.setContentsMargins(14, 2, 14, 14)
         wl.addWidget(body)
         self._wrap = wrap
         lay.addWidget(wrap)
         self.header.clicked.connect(lambda: self.set_expanded(not self._expanded))
+        self.retint(self._color)
         self.set_expanded(expanded, emit=False)
+
+    def retint(self, color: str) -> None:
+        """Recolour the header icons for the active theme."""
+        from .icons import icon
+        self._color = color
+        if self._icon_name:
+            self._ic.setPixmap(icon(self._icon_name, color, 18).pixmap(18, 18))
+        self._chev.setPixmap(icon("chevron-down" if self._expanded else "chevron-right", color, 16).pixmap(16, 16))
 
     def title(self) -> str:
         return self._title
@@ -169,7 +197,7 @@ class CollapsibleSection(QFrame):
     def set_expanded(self, on: bool, emit: bool = True) -> None:
         self._expanded = on
         self._wrap.setVisible(on)
-        self.header.setText(f"{'▾' if on else '▸'}   {self._title}")
+        self.retint(self._color)
         self.header.setAccessibleDescription("expanded" if on else "collapsed")
         if emit:
             self.toggled.emit(on)

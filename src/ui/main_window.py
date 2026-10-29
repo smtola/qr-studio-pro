@@ -63,15 +63,15 @@ class MainWindow(QMainWindow):
         sl = QVBoxLayout(body)
         sl.setContentsMargins(10, 10, 10, 10)
         sl.setSpacing(10)
-        for key, title, widget, default in (
-            ("content", "Content", self.content_panel, True),
-            ("logo", "Logo", self.logo_panel, True),
-            ("colors", "QR Colors", self.color_panel, False),
-            ("eyes", "Finder Eyes", self.eye_panel, False),
-            ("frame", "Frame Designer", self.frame_panel, False),
-            ("export", "Export", self.export_section, False),
+        for key, title, widget, default, ico in (
+            ("content", "Content", self.content_panel, True, "link"),
+            ("logo", "Logo", self.logo_panel, True, "image"),
+            ("colors", "QR Colors", self.color_panel, False, "palette"),
+            ("eyes", "Finder Eyes", self.eye_panel, False, "qr"),
+            ("frame", "Frame Designer", self.frame_panel, False, "frame"),
+            ("export", "Export", self.export_section, False, "export"),
         ):
-            sec = CollapsibleSection(title, widget, self.prefs.sections_open.get(key, default))
+            sec = CollapsibleSection(title, widget, self.prefs.sections_open.get(key, default), ico)
             sec.toggled.connect(lambda on, k=key: self._remember_section(k, on))
             sl.addWidget(sec)
             self.sections[key] = sec
@@ -237,6 +237,8 @@ class MainWindow(QMainWindow):
 
     def _apply_icons(self) -> None:
         color = tokens(self.mode)["icon"]
+        for sec in self.sections.values():
+            sec.retint(color)
         for a in (self.a_new, self.a_open, self.a_save, self.a_load_preset, self.a_save_preset, self.a_undo, self.a_redo,
                   self.a_reset, self.a_logo, self.a_fit, self.a_zin, self.a_zout):
             name = a.property("iconName")

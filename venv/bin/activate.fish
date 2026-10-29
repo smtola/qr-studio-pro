@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV "/Users/haru/Downloads/qr-studio-pro/venv"
+set -gx VIRTUAL_ENV "/Users/haru/Documents/Privacy-Local/SOMTOLA/TALADEV/qr-studio-pro/venv"
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/bin" $PATH

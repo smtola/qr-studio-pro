@@ -21,13 +21,16 @@ def main(argv: list[str]) -> int:
         print(f"{APP_NAME} {VERSION}")
         return 0
 
+    # Let the GUI thread take the interpreter lock back quickly while previews render in the background.
+    sys.setswitchinterval(0.001)
+
     from PySide6.QtCore import Qt
     from PySide6.QtWidgets import QApplication
 
     from src.services.app_prefs import AppPrefs
     from src.ui.main_window import MainWindow
     from src.ui.main_window import check_icon_path
-    from src.ui.theme import apply_theme, resolve_mode
+    from src.ui.theme import apply_theme, resolve_mode, setup_fonts
     from src.utils.logging_config import get_logger, setup_logging
     from src.version import APP_NAME, ORG_NAME
 
@@ -39,6 +42,7 @@ def main(argv: list[str]) -> int:
     app.setApplicationName(APP_NAME)
     app.setOrganizationName(ORG_NAME)
     prefs = AppPrefs.load()
+    setup_fonts(app)
     apply_theme(app, prefs.theme, check_icon_path())
 
     win = MainWindow(prefs)

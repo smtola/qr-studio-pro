@@ -1,3 +1,9 @@
+<#
+.SYNOPSIS  Build QR Studio Pro on Windows 10/11: PyInstaller app, installer (.exe) and optional portable .exe.
+.EXAMPLE   powershell -ExecutionPolicy Bypass -File scripts\build_windows.ps1
+.EXAMPLE   powershell -ExecutionPolicy Bypass -File scripts\build_windows.ps1 -Portable -SkipTests
+Output goes to dist\ :  QRStudioPro\ (app folder), QRStudioPro-<version>-Setup.exe, QRStudioPro-portable.exe
+#>
 param([switch]$Portable, [switch]$SkipTests, [switch]$SkipInstaller)
 $ErrorActionPreference = "Stop"
 Set-Location (Split-Path -Parent $PSScriptRoot)
