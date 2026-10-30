@@ -113,4 +113,5 @@ def test_drop_csv_opens_batch(window, monkeypatch, tmp_path):
     md = QMimeData()
     md.setUrls([QUrl.fromLocalFile(str(f))])
     window.dropEvent(QDropEvent(QPointF(5, 5), Qt.DropAction.CopyAction, md, Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier))
-    assert seen == [str(f)]
+    from pathlib import Path
+    assert [Path(p) for p in seen] == [f]
