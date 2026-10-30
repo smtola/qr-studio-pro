@@ -16,6 +16,7 @@ MAX_RECENT = 10
 @dataclass
 class AppPrefs:
     theme: str = "system"            # system | light | dark
+    language: str = "en"             # en | km
     last_export_dir: str = ""
     last_logo_dir: str = ""
     last_project_dir: str = ""
@@ -45,6 +46,8 @@ class AppPrefs:
             pass
         if obj.theme not in ("system", "light", "dark"):
             obj.theme = "system"
+        if obj.language not in ("en", "km"):
+            obj.language = "en"
         return obj
 
     def save(self) -> None:

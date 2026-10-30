@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from datetime import datetime  # noqa: F401  (type of parse_datetime)
 from urllib.parse import urlsplit
 
 HEX_RE = re.compile(r"^#?([0-9a-fA-F]{6})$")
@@ -167,6 +168,66 @@ def build_vcard(name: str, org: str = "", phone: str = "", email: str = "", url:
         lines.append(f"URL:{normalize_url(url)}")
     lines.append("END:VCARD")
     return "\n".join(lines)
+
+
+def build_geo(lat: str, lng: str) -> str:
+    try:
+        la, lo = float((lat or "").strip().replace(",", ".")), float((lng or "").strip().replace(",", "."))
+    except ValueError:
+        raise ValidationError("Enter the latitude and longitude as numbers, e.g. 11.5564 and 104.9282.") from None
+    if not -90 <= la <= 90:
+        raise ValidationError("Latitude must be between -90 and 90.")
+    if not -180 <= lo <= 180:
+        raise ValidationError("Longitude must be between -180 and 180.")
+    return f"geo:{la:.6f},{lo:.6f}"
+
+
+def parse_datetime(raw: str, field: str = "Date") -> "datetime":
+    from datetime import datetime
+    t = (raw or "").strip().replace("T", " ")
+    for fmt in ("%Y-%m-%d %H:%M", "%Y-%m-%d %H:%M:%S", "%d/%m/%Y %H:%M", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(t, fmt)
+        except ValueError:
+            continue
+    raise ValidationError(f"{field}: use the format 2026-12-31 18:00 (year-month-day hour:minute).")
+
+
+def build_event(title: str, start: str, end: str = "", location: str = "", description: str = "") -> str:
+    from datetime import timedelta
+    if not (title or "").strip():
+        raise ValidationError("Enter the event title.")
+    st = parse_datetime(start, "Start")
+    all_day = len((start or "").strip()) == 10
+    en = parse_datetime(end, "End") if (end or "").strip() else (st + timedelta(days=1) if all_day else st + timedelta(hours=1))
+    if en < st:
+        raise ValidationError("The event cannot end before it starts.")
+    f = "%Y%m%d" if all_day else "%Y%m%dT%H%M%S"
+    lines = ["BEGIN:VEVENT", f"SUMMARY:{_vc(title.strip())}",
+             f"DTSTART{';VALUE=DATE' if all_day else ''}:{st.strftime(f)}",
+             f"DTEND{';VALUE=DATE' if all_day else ''}:{en.strftime(f)}"]
+    if location.strip():
+        lines.append(f"LOCATION:{_vc(location.strip())}")
+    if description.strip():
+        lines.append(f"DESCRIPTION:{_vc(description.strip())}")
+    lines.append("END:VEVENT")
+    return "\n".join(lines)
+
+
+def build_whatsapp(number: str, message: str = "") -> str:
+    from urllib.parse import quote
+    digits = "".join(c for c in normalize_phone(number) if c.isdigit())
+    if len(digits) < 6:
+        raise ValidationError("Enter the number with its country code, e.g. +855 12 345 678.")
+    return f"https://wa.me/{digits}" + (f"?text={quote(message.strip(), safe='')}" if message.strip() else "")
+
+
+def build_telegram(handle: str) -> str:
+    h = (handle or "").strip().lstrip("@")
+    h = re.sub(r"^(https?://)?(t\.me|telegram\.me)/", "", h)
+    if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{4,31}", h):
+        raise ValidationError("Enter a Telegram username (5–32 letters, digits or _), e.g. @mychannel.")
+    return f"https://t.me/{h}"
 
 
 def slugify(text: str, fallback: str = "qr-code", max_len: int = 40) -> str:

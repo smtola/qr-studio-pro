@@ -1,7 +1,7 @@
-; Inno Setup 6 script. Compile with:  iscc /DAppVersion=1.0.0 packaging\windows_installer.iss
+; Inno Setup 6 script. Compile with:  iscc /DAppVersion=1.1.0 packaging\windows_installer.iss
 ; (scripts\build_windows.ps1 does this for you.) Installs per-user by default, no administrator rights needed.
 #ifndef AppVersion
-  #define AppVersion "1.0.0"
+  #define AppVersion "1.1.0"
 #endif
 #define AppName "QR Studio Pro"
 #define AppExe "QRStudioPro.exe"

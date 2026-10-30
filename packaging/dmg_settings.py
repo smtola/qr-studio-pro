@@ -1,6 +1,6 @@
 """dmgbuild settings: drag-and-drop installer window.
 
-    dmgbuild -s packaging/dmg_settings.py -D app="dist/QR Studio Pro.app" "QR Studio Pro" dist/QRStudioPro-1.0.0-<arch>.dmg
+    dmgbuild -s packaging/dmg_settings.py -D app="dist/QR Studio Pro.app" "QR Studio Pro" dist/QRStudioPro-1.1.0-<arch>.dmg
 """
 import os
 

@@ -5,15 +5,15 @@ import copy
 from dataclasses import asdict, dataclass, field, fields, is_dataclass
 from typing import Any
 
-from ..utils.validation import ValidationError, build_email, build_phone, build_sms, build_vcard, \
-    build_wifi, check_payload_length, is_valid_hex, normalize_hex, normalize_url
+from ..utils.validation import ValidationError, build_email, build_event, build_geo, build_phone, build_sms, \
+    build_telegram, build_vcard, build_whatsapp, build_wifi, check_payload_length, is_valid_hex, normalize_hex, normalize_url
 from ..version import VERSION
 
 SCHEMA_VERSION = 1
 
-CONTENT_TYPES = ("url", "text", "email", "phone", "sms", "wifi", "vcard")
+CONTENT_TYPES = ("url", "text", "email", "phone", "sms", "wifi", "vcard", "geo", "event", "whatsapp", "telegram")
 ECC_LEVELS = ("L", "M", "Q", "H")
-MODULE_STYLES = ("square", "rounded", "dots")
+MODULE_STYLES = ("square", "rounded", "dots", "small-dots", "gapped", "bars")
 EYE_STYLES = ("square", "rounded", "circle")
 BACKING_SHAPES = ("none", "square", "rounded", "circle")
 FRAME_TYPES = ("none", "simple", "rounded", "card", "badge", "double", "corporate", "cta")
@@ -41,6 +41,16 @@ class ContentSettings:
     vcard_phone: str = ""
     vcard_email: str = ""
     vcard_url: str = ""
+    geo_lat: str = ""
+    geo_lng: str = ""
+    event_title: str = ""
+    event_start: str = ""
+    event_end: str = ""
+    event_location: str = ""
+    event_description: str = ""
+    wa_number: str = ""
+    wa_message: str = ""
+    telegram_user: str = ""
     ecc: str = "M"
     quiet_zone: int = 4
 
@@ -64,6 +74,15 @@ class ContentSettings:
         elif t == "vcard":
             p = build_vcard(self.vcard_name, self.vcard_org, self.vcard_phone,
                             self.vcard_email, self.vcard_url)
+        elif t == "geo":
+            p = build_geo(self.geo_lat, self.geo_lng)
+        elif t == "event":
+            p = build_event(self.event_title, self.event_start, self.event_end, self.event_location,
+                            self.event_description)
+        elif t == "whatsapp":
+            p = build_whatsapp(self.wa_number, self.wa_message)
+        elif t == "telegram":
+            p = build_telegram(self.telegram_user)
         else:
             raise ValidationError(f"Unknown content type '{t}'.")
         check_payload_length(p)

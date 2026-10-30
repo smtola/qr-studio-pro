@@ -168,3 +168,14 @@ def test_manual_check_without_feed_explains(window, monkeypatch):
     monkeypatch.setattr(QMessageBox, "information", lambda *a, **k: msgs.append(a[2]))
     window.updates.check(manual=True)
     assert msgs and "not set up" in msgs[0]
+
+
+def test_scan_badge_reports_ok(window, qtbot_wait=None):
+    import time
+    from PySide6.QtWidgets import QApplication
+    window.preview.render_now()
+    t = time.time()
+    while time.time() - t < 8 and window.preview.last_scan is None:
+        QApplication.processEvents()
+    assert window.preview.last_scan is not None and window.preview.last_scan.status == "ok"
+    assert window.preview.scan_badge.text().startswith("✓")

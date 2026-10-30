@@ -9,7 +9,8 @@ from .state import AppState
 from .widgets import ColorField, SliderRow, combo, form, muted, set_combo, set_value
 
 CUSTOM = "Custom Brand Colors"
-MODULES = [("Square", "square"), ("Rounded", "rounded"), ("Dots", "dots")]
+MODULES = [("Square", "square"), ("Rounded", "rounded"), ("Dots", "dots"), ("Small dots", "small-dots"),
+           ("Gapped squares", "gapped"), ("Vertical bars", "bars")]
 EYES = [("Square", "square"), ("Rounded", "rounded"), ("Circle", "circle")]
 
 

@@ -5,13 +5,19 @@ Everything runs locally – no server, account, subscription or database. Python
 
 | | |
 |---|---|
-| Content | URL, text, e-mail, phone, SMS, Wi-Fi, vCard · error correction L/M/Q/H · quiet zone 1–10 modules · Unicode & Khmer |
+| Content | URL, text, e-mail, phone, SMS, Wi-Fi, vCard, map location, calendar event, WhatsApp, Telegram · error correction L/M/Q/H · quiet zone 1–10 modules · Unicode & Khmer |
 | Logo | **Upload Center Logo** (PNG, JPG, SVG, transparent PNG) · aspect ratio preserved · 10–25 % size · square / rounded / circle / no backing + colour · on/off · auto level H |
 | Colours | picker + HEX · presets (Classic, Corporate Blue, Emerald, Crimson, Purple, Dark Premium, Custom) · transparent background · optional gradient · contrast warnings |
 | Finder eyes | outer / pupil colour and style (square, rounded, circle) independent of the modules |
 | Frame Designer | none, rectangle, rounded, card, circle/badge, double line, corporate bar, call-to-action · colours, thickness, radius, padding, margin, dashed · title, company, caption (top/bottom) · font family/size/weight/colour |
 | Export | PNG, JPG, SVG, PDF (vector) · native Save dialog · size / dpi · overwrite warning |
-| Projects | save/load `.qrsp` project JSON · brand presets · recent projects · remembered folders · light/dark theme · undo/redo |
+| Scan check | live **✓ Scans OK / ⚠ May not scan** badge: the rendered code is decoded by an independent decoder (OpenCV). A pass is not a guarantee – still test with a phone at print size |
+| Batch | **File ▸ Batch Generate from CSV…** – one file per row (columns `content`, `filename`, `title`, `caption`, `company`), progress, cancel, `batch-report.csv` |
+| Print sheets | **File ▸ Create Print Sheet…** – A4 / Letter PDF with N copies or one code per CSV row, sticker size, margins, cut guides |
+| Templates | **Presets ▸ Design Templates…** – 10 ready-made looks with thumbnails (applies as one undo step) |
+| Modules | square, rounded, dots, small dots, gapped squares, vertical bars · gradient fill |
+| Languages | English and Khmer (**View ▸ Language**); needs a Khmer system font (built into Windows and macOS) |
+| Projects | save/load `.qrsp` project JSON · brand presets · recent projects (File ▸ Recent Projects… with thumbnails) · drag & drop (logo, project, CSV) · remembered folders · light/dark theme · undo/redo |
 
 Preview and every export format are drawn from **one shared scene description** (`src/core/scene.py`), so what you see is what you export.
 
@@ -57,7 +63,7 @@ desktop shortcut and a clean uninstaller; settings in `%APPDATA%\QRStudioPro` ar
 5. **Export** – format, width, dpi; *Export…* opens the native Save dialog. SVG/PDF keep modules and frame as vectors (the logo is an embedded PNG).
 6. **File ▸ Save** stores a `.qrsp` project (settings + logo reference, relative and absolute); **Presets ▸ Save Preset** stores only the style for reuse.
 
-Shortcuts: Ctrl/Cmd+N/O/S new/open/save · +E export · +L logo · +Z/Shift+Z undo/redo · +T theme · +0 fit · +/- zoom.
+Shortcuts: Ctrl/Cmd+B batch · +Shift+T templates · +Shift+L print sheet · +Alt+O recent projects · Ctrl/Cmd+N/O/S new/open/save · +E export · +L logo · +Z/Shift+Z undo/redo · +T theme · +0 fit · +/- zoom.
 
 ## Updates
 
@@ -83,10 +89,11 @@ atomically and temp files removed. No secrets, no admin rights.
 
 ```
 app.py                  entry point (--selftest, --version)
-src/core/               qr_generator · logo_composer · frame_renderer (layout → Scene) · render_raster/svg/pdf · export_manager · scan_advisor · color_manager · fonts
+src/core/               qr_generator · logo_composer · frame_renderer (layout → Scene) · render_raster/svg/pdf · export_manager · scan_advisor · scan_check · batch · print_sheet · color_manager · fonts
 src/models/             project_settings (serialisable dataclasses, sanitising)
-src/services/           project_service · preset_service · app_prefs · history (undo/redo)
-src/ui/                 PySide6 window, panels, theme, icons
+src/services/           project_service · preset_service · templates · app_prefs · history (undo/redo)
+src/ui/                 PySide6 window, panels, dialogs (tools_dialogs), theme, icons
+src/i18n.py             English / Khmer interface translation
 src/utils/              validation · paths · logging
 tests/                  pytest (unit, export, UI offscreen) – decodes exports with OpenCV as an independent scanner
 packaging/ scripts/ docs/

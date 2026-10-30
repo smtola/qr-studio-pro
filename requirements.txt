@@ -4,3 +4,6 @@ qrcode==8.2
 pillow==12.3.0
 reportlab==5.0.1
 certifi==2026.10.18
+# In-app "Scans OK" check (QR decoder); the app still runs without it
+opencv-python-headless==5.0.0.93
+numpy==2.5.3

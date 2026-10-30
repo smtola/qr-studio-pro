@@ -10,15 +10,17 @@ from ..utils.paths import resource_path
 LIGHT = dict(bg="#F4F5F9", panel="#FFFFFF", panel2="#F7F8FC", border="#E4E7EF", border2="#D5D9E5", text="#141826",
              muted="#68708A", accent="#4F46E5", accent2="#7C3AED", accent_hover="#4338CA", accent_text="#FFFFFF",
              accent_soft="#EEF0FF", input="#FFFFFF", hover="#EEF0F7", canvas="#ECEEF5", ok="#15803D", warn="#B45309",
-             err="#B91C1C", err_bg="#FDECEC", warn_bg="#FEF3E2", info_bg="#EEF1F8", icon="#3B4256", focus="#818CF8",
+             err="#B91C1C", err_bg="#FDECEC", ok_bg="#E6F6EC", warn_bg="#FEF3E2", info_bg="#EEF1F8", icon="#3B4256", focus="#818CF8",
              check_a="#FFFFFF", check_b="#E6E9F1")
 DARK = dict(bg="#0E1016", panel="#161922", panel2="#1B1F2A", border="#262B39", border2="#343A4D", text="#ECEEF6",
             muted="#8E96AD", accent="#8B8DFF", accent2="#B38BFF", accent_hover="#A3A5FF", accent_text="#0E1020",
             accent_soft="#232749", input="#12151D", hover="#222736", canvas="#0B0D12", ok="#4ADE80", warn="#FBBF24",
-            err="#F87171", err_bg="#3A1D22", warn_bg="#3A2E17", info_bg="#1E2331", icon="#C5CADB", focus="#8B8DFF",
+            err="#F87171", err_bg="#3A1D22", ok_bg="#16301F", warn_bg="#3A2E17", info_bg="#1E2331", icon="#C5CADB", focus="#8B8DFF",
             check_a="#252A38", check_b="#1D212D")
 
 FONT_FILES = ("Inter-Regular.otf", "Inter-Medium.otf", "Inter-SemiBold.otf")
+KHMER_FALLBACK = ("Leelawadee UI", "Khmer UI", "Khmer Sangam MN", "Noto Sans Khmer", "Noto Serif Khmer",
+                  "Khmer OS System", "Khmer OS Battambang")
 FONT_STACK = ("Inter", "SF Pro Text", "Segoe UI Variable", "Segoe UI", "Helvetica Neue", "Arial")
 
 _QSS = """
@@ -81,6 +83,9 @@ QLabel#ok { color: %(ok)s; }
 QLabel#warn { color: %(warn)s; }
 QLabel#valueLabel { color: %(muted)s; min-width: 44px; font-weight: 500; }
 QLabel#pill { background: %(panel)s; border: 1px solid %(border)s; border-radius: 10px; padding: 3px 9px; color: %(muted)s; font-weight: 500; font-size: 12px; }
+QLabel#scanBadge { border-radius: 10px; padding: 3px 10px; font-weight: 600; font-size: 12px; background: %(info_bg)s; color: %(muted)s; }
+QLabel#scanBadge[status="ok"] { background: %(ok_bg)s; color: %(ok)s; }
+QLabel#scanBadge[status="fail"] { background: %(warn_bg)s; color: %(warn)s; }
 QLabel#emptyTitle { font-size: 18px; font-weight: 600; }
 
 /* ---- buttons & inputs ---- */
@@ -133,8 +138,7 @@ def setup_fonts(app: QApplication) -> str:
             families = QFontDatabase.applicationFontFamilies(fid)
             family = families[0] if families else ""
     f = QFont(family) if family else QFont()
-    if not family:
-        f.setFamilies(list(FONT_STACK))
+    f.setFamilies(([family] if family else list(FONT_STACK)) + list(KHMER_FALLBACK))
     f.setPixelSize(13)
     f.setStyleStrategy(QFont.StyleStrategy.PreferAntialias)
     app.setFont(f)

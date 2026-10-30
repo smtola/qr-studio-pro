@@ -45,7 +45,10 @@ def main(argv: list[str]) -> int:
     setup_fonts(app)
     apply_theme(app, prefs.theme, check_icon_path())
 
+    from src import i18n
+    i18n.install(app, prefs.language)
     win = MainWindow(prefs)
+    i18n.retranslate(win)
     win.show()
     for arg in argv[1:]:
         if not arg.startswith("-") and arg.lower().endswith((".qrsp", ".json")):

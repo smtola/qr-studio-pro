@@ -15,7 +15,9 @@ from PySide6.QtWidgets import (QFrame, QHBoxLayout, QLabel, QScrollArea, QSizePo
 
 from ..core.export_manager import Prepared, prepare
 from ..core.render_raster import render_raster
+from ..core.scan_check import FAIL, OK, ScanResult, available as scan_available, check_scan
 from ..utils.validation import ValidationError
+from ..i18n import tr
 from .icons import icon
 from .state import AppState
 from .theme import tokens
@@ -25,7 +27,7 @@ DRAFT_MS, FINAL_MS = 25, 240
 
 
 class _Signals(QObject):
-    done = Signal(int, int, object, object, str, str)   # job id, version, QImage|None, Prepared|None, error, kind
+    done = Signal(int, int, object, object, str, str, object)   # job id, version, QImage|None, Prepared|None, error, kind, ScanResult|None
 
 
 class _Job(QRunnable):
@@ -34,17 +36,25 @@ class _Job(QRunnable):
         self.a = (job_id, version, settings, width_px, ss, kind)
         self.sig = sig
 
+    def _emit(self, *args) -> None:
+        try:
+            self.sig.done.emit(*args)
+        except RuntimeError:        # window closed while the job was running
+            pass
+
     def run(self) -> None:
         job_id, version, settings, width_px, ss, kind = self.a
         try:
             prep: Prepared = prepare(settings, strict=False)
             im: Image.Image = render_raster(prep.scene, width_px, ss=ss)
             qi = QImage(im.tobytes("raw", "RGBA"), im.width, im.height, QImage.Format.Format_RGBA8888).copy()
-            self.sig.done.emit(job_id, version, qi, prep, "", kind)
+            scan = check_scan(prep, im) if kind == "final" and scan_available() else None
         except ValidationError as e:
-            self.sig.done.emit(job_id, version, None, None, str(e), kind)
+            self._emit(job_id, version, None, None, str(e), kind, None)
         except Exception as e:  # noqa: BLE001 - never let a render error kill the UI
-            self.sig.done.emit(job_id, version, None, None, f"The preview could not be drawn: {e}", kind)
+            self._emit(job_id, version, None, None, f"The preview could not be drawn: {e}", kind, None)
+        else:
+            self._emit(job_id, version, qi, prep, "", kind, scan)
 
 
 def _tile(kind: str, t: dict, dpr: float) -> QPixmap:
@@ -160,9 +170,15 @@ class PreviewPanel(QWidget):
         self.zoom_label.setAccessibleName("Zoom level")
         self.zoom_label.setMinimumWidth(52)
         self.zoom_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.scan_badge = QLabel()
+        self.scan_badge.setObjectName("scanBadge")
+        self.scan_badge.setAccessibleName("Scan check result")
+        self.scan_badge.hide()
         title = QLabel("Live preview")
         title.setObjectName("h2")
         bar.addWidget(title)
+        bar.addSpacing(8)
+        bar.addWidget(self.scan_badge)
         bar.addStretch(1)
         for w in (self.b_out, self.zoom_label, self.b_in, self.b_fit):
             bar.addWidget(w)
@@ -198,6 +214,7 @@ class PreviewPanel(QWidget):
         self.b_fit.clicked.connect(self.fit)
         state.changed.connect(self.request)
         state.loaded.connect(self.request)
+        self.last_scan: ScanResult | None = None
         self.set_theme(mode)
 
     # ------------------------------------------------------------------ public
@@ -283,7 +300,7 @@ class PreviewPanel(QWidget):
             ss = 3 if width <= 900 else 2
         self._pool.start(_Job(self._job_id, self._version, self.state.settings.clone(), width, ss, kind, self._sig))
 
-    def _on_done(self, _job_id: int, version: int, qimg, prep, error: str, kind: str) -> None:
+    def _on_done(self, _job_id: int, version: int, qimg, prep, error: str, kind: str, scan=None) -> None:
         self._busy = False
         self.state.content_error = error
         if qimg is not None and prep is not None:
@@ -298,6 +315,12 @@ class PreviewPanel(QWidget):
             self.canvas.dim = True
             self._set_banner(error)
             self.canvas.update()
+        if error:
+            self._set_scan(None)
+        elif scan is not None and version == self._version:
+            self._set_scan(scan)
+        elif kind == "draft" and self.scan_badge.property("status") not in (None, "busy"):
+            self._set_scan("busy")
         if version != self._emitted_version or error:
             self._emitted_version = version
             self.rendered.emit(prep, error)
@@ -306,6 +329,27 @@ class PreviewPanel(QWidget):
             self._start(kind_next)
         elif kind == "draft" and not self._final_timer.isActive() and version == self._version:
             self._start("final")
+
+    def _set_scan(self, scan) -> None:
+        """Show the self-test badge. `scan` is a ScanResult, "busy", or None (hide)."""
+        b = self.scan_badge
+        if scan is None or not scan_available():
+            status, text, tip = "", "", ""
+        elif scan == "busy":
+            status, text, tip = "busy", tr("Checking scan…"), ""
+        elif scan.status == OK:
+            status, text, tip = "ok", tr("✓ Scans OK"), scan.message
+        elif scan.status == FAIL:
+            status, text, tip = "fail", tr("⚠ May not scan"), scan.message
+        else:
+            status, text, tip = "", "", ""
+        b.setProperty("status", status or None)
+        b.setText(text)
+        b.setToolTip(tip)
+        b.setVisible(bool(text))
+        b.style().unpolish(b)
+        b.style().polish(b)
+        self.last_scan = scan if isinstance(scan, ScanResult) else None
 
     def _set_banner(self, text: str) -> None:
         self.banner_text.setText(text)

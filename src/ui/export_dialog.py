@@ -25,7 +25,8 @@ def default_filename(state: AppState, fmt: str) -> str:
     s = state.settings
     c = s.content
     base = {"url": c.url, "text": c.text, "email": c.email_to, "phone": c.phone, "sms": c.sms_number,
-            "wifi": c.wifi_ssid, "vcard": c.vcard_name}.get(c.type, "")
+            "wifi": c.wifi_ssid, "vcard": c.vcard_name, "geo": c.geo_lat, "event": c.event_title,
+            "whatsapp": c.wa_number, "telegram": c.telegram_user}.get(c.type, "")
     return f"qr-code-{slugify(base, 'design')}{EXT[fmt]}"
 
 

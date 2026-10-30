@@ -20,9 +20,9 @@ IS_WIN, IS_MAC = sys.platform == "win32", sys.platform == "darwin"
 NAME = "QRStudioPro"
 
 datas = [(str(ROOT / "assets"), "assets")]
-hiddenimports = ["PySide6.QtSvg", "reportlab.pdfbase._fontdata", "reportlab.graphics.barcode"]
+hiddenimports = ["cv2", "numpy", "PySide6.QtSvg", "reportlab.pdfbase._fontdata", "reportlab.graphics.barcode"]
 excludes = [
-    "cv2", "numpy", "pytest", "tkinter", "unittest", "matplotlib", "scipy", "pandas",   # dev / unused
+    "pytest", "tkinter", "unittest", "matplotlib", "scipy", "pandas",   # dev / unused
     "PySide6.QtWebEngineCore", "PySide6.QtWebEngineWidgets", "PySide6.QtQml", "PySide6.QtQuick",
     "PySide6.Qt3DCore", "PySide6.QtMultimedia", "PySide6.QtNetwork", "PySide6.QtSql", "PySide6.QtPdf",
 ]

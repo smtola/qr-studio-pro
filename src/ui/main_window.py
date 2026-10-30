@@ -4,15 +4,17 @@ from __future__ import annotations
 from pathlib import Path
 
 from PySide6.QtCore import QByteArray, Qt, QTimer
-from PySide6.QtGui import QAction, QCloseEvent, QDragEnterEvent, QDropEvent, QIcon, QKeySequence
+from PySide6.QtGui import QAction, QActionGroup, QCloseEvent, QDragEnterEvent, QDropEvent, QIcon, QKeySequence
 from PySide6.QtWidgets import (QLabel, QApplication, QFileDialog, QInputDialog, QMainWindow, QMenu, QMessageBox, QScrollArea,
                                QSizePolicy, QSplitter, QToolBar, QVBoxLayout, QWidget)
 
+from .. import i18n
 from ..core.export_manager import Prepared
 from ..models.project_settings import ProjectSettings
 from ..services.app_prefs import AppPrefs
 from ..services.preset_service import apply_preset_file, list_presets, save_preset
 from ..services.project_service import load_project, save_project
+from ..services.templates import apply_template
 from ..utils.logging_config import get_logger
 from ..utils.paths import resource_path
 from ..utils.validation import ValidationError
@@ -26,6 +28,7 @@ from .logo_panel import LogoPanel
 from .preview_panel import PreviewPanel
 from .properties_panel import PropertiesPanel
 from .state import AppState
+from .tools_dialogs import BatchDialog, PrintSheetDialog, RecentProjectsDialog, TemplateGallery
 from .theme import apply_theme, resolve_mode, tokens
 from .update_dialog import UpdateController
 from .widgets import CollapsibleSection
@@ -44,6 +47,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.prefs = prefs or AppPrefs.load()
         self.state = state or AppState()
+        i18n.install(QApplication.instance(), self.prefs.language)
         self.mode = resolve_mode(self.prefs.theme)
         self.setAcceptDrops(True)
         self.resize(1480, 920)
@@ -155,6 +159,14 @@ class MainWindow(QMainWindow):
         self.a_save_as = self._act("Save As…", lambda: self.save_project_action(True), S.SaveAs, "", "Save under a new name")
         self.a_load_preset = self._act("Open Preset…", self.open_preset_file, "Ctrl+Shift+O", "open", "Load a brand preset file")
         self.a_save_preset = self._act("Save Preset…", self.save_preset_action, "Ctrl+Shift+S", "preset", "Save the current style as a brand preset")
+        self.a_templates = self._act("Design Templates…", self.open_templates, "Ctrl+Shift+T", "layout",
+                                     "Start from a ready-made design")
+        self.a_batch = self._act("Batch Generate from CSV…", self.open_batch, "Ctrl+B", "",
+                                 "Create many QR codes from a CSV file")
+        self.a_sheet = self._act("Create Print Sheet…", self.open_print_sheet, "Ctrl+Shift+L", "",
+                                 "Arrange QR codes on an A4 / Letter PDF with cut guides")
+        self.a_recent = self._act("Recent Projects…", self.open_recent_dialog, "Ctrl+Alt+O", "",
+                                  "Browse recent projects with thumbnails")
         self.a_undo = self._act("Undo", self.state.undo, S.Undo, "undo", "Undo the last change")
         self.a_redo = self._act("Redo", self.state.redo, S.Redo, "redo", "Redo")
         self.a_reset = self._act("Reset", self.reset_design, "Ctrl+Shift+R", "reset", "Reset the design to defaults (keeps your content)")
@@ -164,6 +176,15 @@ class MainWindow(QMainWindow):
         self.a_fit = self._act("Fit to Window", self.preview.fit, "Ctrl+0", "fit")
         self.a_zin = self._act("Zoom In", lambda: self.preview.step(1), ["Ctrl++", "Ctrl+="], "zoom-in")
         self.a_zout = self._act("Zoom Out", lambda: self.preview.step(-1), "Ctrl+-", "zoom-out")
+        self.lang_actions: dict[str, QAction] = {}
+        self.lang_group = QActionGroup(self)
+        for code, label in i18n.LANGUAGES:
+            a = QAction(label, self)
+            a.setCheckable(True)
+            a.setChecked(code == self.prefs.language)
+            a.triggered.connect(lambda _=False, c=code: self.set_language(c))
+            self.lang_group.addAction(a)
+            self.lang_actions[code] = a
         self.a_props = self._act("Properties Panel", self.toggle_props, "Ctrl+Shift+P")
         self.a_props.setCheckable(True)
         self.a_props.setChecked(self.prefs.show_right_panel)
@@ -188,7 +209,7 @@ class MainWindow(QMainWindow):
         for a in (self.a_new, self.a_open, self.a_save):
             tb.addAction(a)
         tb.addSeparator()
-        tb.addAction(self.a_load_preset)
+        tb.addAction(self.a_templates)
         tb.addAction(self.a_save_preset)
         tb.addSeparator()
         for a in (self.a_undo, self.a_redo, self.a_reset):
@@ -208,10 +229,13 @@ class MainWindow(QMainWindow):
         f.addActions([self.a_new, self.a_open])
         self.recent_menu = QMenu("Open Recent", self)
         f.addMenu(self.recent_menu)
+        f.addAction(self.a_recent)
         f.addSeparator()
         f.addActions([self.a_save, self.a_save_as])
         f.addSeparator()
         f.addAction(self.a_export)
+        f.addAction(self.a_batch)
+        f.addAction(self.a_sheet)
         f.addSeparator()
         f.addAction(self.a_quit)
         f.aboutToShow.connect(self._fill_recent)
@@ -221,6 +245,8 @@ class MainWindow(QMainWindow):
         e.addAction(self.a_logo)
         e.addAction(self.a_reset)
         p = mb.addMenu("&Presets")
+        p.addAction(self.a_templates)
+        p.addSeparator()
         p.addActions([self.a_save_preset, self.a_load_preset])
         self.preset_menu = QMenu("Saved Presets", self)
         p.addMenu(self.preset_menu)
@@ -229,6 +255,8 @@ class MainWindow(QMainWindow):
         v.addActions([self.a_fit, self.a_zin, self.a_zout])
         v.addSeparator()
         v.addActions([self.a_props, self.a_theme])
+        lm = v.addMenu("Language")
+        lm.addActions(list(self.lang_actions.values()))
         h = mb.addMenu("&Help")
         h.addAction(self.a_update)
         h.addAction(self.a_auto_update)
@@ -240,7 +268,7 @@ class MainWindow(QMainWindow):
         for sec in self.sections.values():
             sec.retint(color)
         for a in (self.a_new, self.a_open, self.a_save, self.a_load_preset, self.a_save_preset, self.a_undo, self.a_redo,
-                  self.a_reset, self.a_logo, self.a_fit, self.a_zin, self.a_zout):
+                  self.a_reset, self.a_logo, self.a_templates, self.a_fit, self.a_zin, self.a_zout):
             name = a.property("iconName")
             if name:
                 a.setIcon(icon(name, color))
@@ -394,6 +422,10 @@ class MainWindow(QMainWindow):
         except ValidationError as exc:
             QMessageBox.warning(self, "Preset could not be loaded", str(exc))
             return
+        self._adopt(new, f"Applied preset: {Path(path).stem}")
+
+    def _adopt(self, new: ProjectSettings, message: str) -> None:
+        """Replace the settings with `new` as one undoable step."""
         self.state.flush()
         self.state.settings = new
         self.state.history.push(new)
@@ -401,7 +433,31 @@ class MainWindow(QMainWindow):
         self.state.loaded.emit()
         self.state.changed.emit()
         self.state.meta.emit()
-        self.statusBar().showMessage(f"Applied preset: {Path(path).stem}", 4000)
+        self.statusBar().showMessage(message, 4000)
+
+    # ===== productivity tools =========================================================
+    def open_templates(self) -> None:
+        self.state.flush()
+        dlg = TemplateGallery(self, self.state.settings)
+        if dlg.exec() and dlg.selected is not None:
+            self._adopt(apply_template(self.state.settings, dlg.selected), f"Applied template: {dlg.selected.name}")
+
+    def open_batch(self, csv_path: str = "") -> None:
+        dlg = BatchDialog(self, self.state, self.prefs)
+        if csv_path:
+            dlg.csv.setText(csv_path)
+            dlg.load_csv(csv_path)
+        dlg.exec()
+        self.prefs.save()
+
+    def open_print_sheet(self) -> None:
+        PrintSheetDialog(self, self.state, self.prefs).exec()
+        self.prefs.save()
+
+    def open_recent_dialog(self) -> None:
+        dlg = RecentProjectsDialog(self, self.prefs)
+        if dlg.exec() and dlg.chosen and self._confirm_discard():
+            self.open_project(dlg.chosen)
 
     def _fill_presets(self) -> None:
         self.preset_menu.clear()
@@ -422,6 +478,15 @@ class MainWindow(QMainWindow):
         apply_theme(QApplication.instance(), self.mode, check_icon_path())
         self.preview.set_theme(self.mode)
         self._apply_icons()
+        i18n.retranslate(self)
+
+    def set_language(self, code: str) -> None:
+        self.prefs.language = code
+        self.prefs.save()
+        i18n.set_language(code)
+        self.lang_actions[code].setChecked(True)
+        i18n.retranslate(self)
+        self.preview.request()
 
     def toggle_auto_update(self) -> None:
         self.prefs.auto_check_updates = self.a_auto_update.isChecked()
@@ -451,6 +516,8 @@ class MainWindow(QMainWindow):
             if low.endswith((".png", ".jpg", ".jpeg", ".svg")):
                 self.logo_panel.set_logo_file(p)
                 self.sections["logo"].set_expanded(True)
+            elif low.endswith(".csv"):
+                self.open_batch(p)
             elif low.endswith((PROJECT_EXT, ".json")) and self._confirm_discard():
                 self.open_project(p)
             else:

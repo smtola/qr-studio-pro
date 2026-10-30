@@ -89,6 +89,18 @@ def build_qr_layers(settings: ProjectSettings, qrm: QRMatrix, bx: float, by: flo
             if co.module_style == "dots":
                 d = m * 0.86
                 shapes.append(Shape("ellipse", x + (m - d) / 2, y + (m - d) / 2, d, d))
+            elif co.module_style == "small-dots":
+                d = m * 0.62
+                shapes.append(Shape("ellipse", x + (m - d) / 2, y + (m - d) / 2, d, d))
+            elif co.module_style == "gapped":
+                d = m * 0.84
+                shapes.append(Shape("rrect", x + (m - d) / 2, y + (m - d) / 2, d, d, d * 0.22))
+            elif co.module_style == "bars":
+                up, dn = at(r - 1, c), at(r + 1, c)
+                w = m * 0.8
+                corners = (not up, not up, not dn, not dn)
+                shapes.append(Shape("rrect", x + (m - w) / 2, y, w, m, w * 0.5, corners) if any(corners)
+                              else Shape("rrect", x + (m - w) / 2, y, w, m))
             elif co.module_style == "rounded":
                 up, dn, lf, rt = at(r - 1, c), at(r + 1, c), at(r, c - 1), at(r, c + 1)
                 corners = (not up and not lf, not up and not rt, not dn and not rt, not dn and not lf)
