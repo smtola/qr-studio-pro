@@ -43,13 +43,14 @@ def check_icon_path() -> str:
 
 
 class MainWindow(QMainWindow):
-    def __init__(self, prefs: AppPrefs | None = None, state: AppState | None = None) -> None:
+    def __init__(self, prefs: AppPrefs | None = None, state: AppState | None = None, auto_update: bool = True) -> None:
         super().__init__()
         self.prefs = prefs or AppPrefs.load()
         self.state = state or AppState()
         i18n.install(QApplication.instance(), self.prefs.language)
         self.mode = resolve_mode(self.prefs.theme)
         self.setAcceptDrops(True)
+        self.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose, False)
         self.resize(1480, 920)
         self.setMinimumSize(1060, 640)
 
@@ -125,7 +126,7 @@ class MainWindow(QMainWindow):
         self.version_label.setAccessibleName(f"Application version {VERSION}")
         self.statusBar().addPermanentWidget(self.version_label)
         self.updates = UpdateController(self, self.prefs)
-        if self.updates.auto_check_due():
+        if auto_update and self.updates.auto_check_due():
             QTimer.singleShot(4000, lambda: self.updates.check(manual=False))
 
         if self.prefs.geometry:
@@ -190,7 +191,7 @@ class MainWindow(QMainWindow):
         self.a_props.setChecked(self.prefs.show_right_panel)
         self.a_about = self._act("About", self.about)
         self.a_update = self._act("Check for Updates…", lambda: self.updates.check(manual=True), None, "",
-                                  "Look for a newer version of QR Studio Pro")
+                                  "Look for a newer version of TL Studio Pro")
         self.a_update.setMenuRole(QAction.MenuRole.ApplicationSpecificRole)
         self.a_auto_update = self._act("Check for updates automatically", self.toggle_auto_update)
         self.a_auto_update.setCheckable(True)

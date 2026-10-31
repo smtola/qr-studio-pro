@@ -181,7 +181,7 @@ class ProjectSettings:
             raise ValidationError("The settings file does not contain a valid project.")
         ver = data.get("schema_version", 1)
         if not isinstance(ver, int) or ver > SCHEMA_VERSION:
-            raise ValidationError("This project was created by a newer version of QR Studio Pro.")
+            raise ValidationError("This project was created by a newer version of TL Studio Pro.")
         obj = cls()
         for f in fields(cls):
             section = data.get(f.name)

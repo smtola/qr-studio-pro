@@ -9,9 +9,9 @@ Manifest (update.json):
   "notes": "What is new ...",
   "page": "https://example.com/releases",            # optional, opened if no installer matches this computer
   "assets": {
-    "windows":      {"url": "https://.../QRStudioPro-1.1.0-Setup.exe",        "sha256": "<hex>"},
-    "macos-arm64":  {"url": "https://.../QRStudioPro-1.1.0-arm64.dmg",        "sha256": "<hex>"},
-    "macos-x86_64": {"url": "https://.../QRStudioPro-1.1.0-x86_64.dmg",       "sha256": "<hex>"}
+    "windows":      {"url": "https://.../TLStudioPro-1.1.0-Setup.exe",        "sha256": "<hex>"},
+    "macos-arm64":  {"url": "https://.../TLStudioPro-1.1.0-arm64.dmg",        "sha256": "<hex>"},
+    "macos-x86_64": {"url": "https://.../TLStudioPro-1.1.0-x86_64.dmg",       "sha256": "<hex>"}
   }
 }
 """

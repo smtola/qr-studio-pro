@@ -53,3 +53,14 @@ def qapp():
     from PySide6.QtWidgets import QApplication
     app = QApplication.instance() or QApplication(["pytest"])
     yield app
+    # tidy shutdown: finish worker threads and destroy widgets before the interpreter tears Qt down
+    import gc
+
+    from PySide6.QtCore import QThreadPool
+    QThreadPool.globalInstance().waitForDone(10000)
+    for w in app.topLevelWidgets():
+        w.close()
+        w.deleteLater()
+    app.processEvents()
+    app.sendPostedEvents(None, 0)
+    gc.collect()

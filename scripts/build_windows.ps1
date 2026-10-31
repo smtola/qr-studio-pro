@@ -1,8 +1,8 @@
 <#
-.SYNOPSIS  Build QR Studio Pro on Windows 10/11: PyInstaller app, installer (.exe) and optional portable .exe.
+.SYNOPSIS  Build TL Studio Pro on Windows 10/11: PyInstaller app, installer (.exe) and optional portable .exe.
 .EXAMPLE   powershell -ExecutionPolicy Bypass -File scripts\build_windows.ps1
 .EXAMPLE   powershell -ExecutionPolicy Bypass -File scripts\build_windows.ps1 -Portable -SkipTests
-Output goes to dist\ :  QRStudioPro\ (app folder), QRStudioPro-<version>-Setup.exe, QRStudioPro-portable.exe
+Output goes to dist\ :  TLStudioPro\ (app folder), TLStudioPro-<version>-Setup.exe, TLStudioPro-portable.exe
 #>
 param([switch]$Portable, [switch]$SkipTests, [switch]$SkipInstaller)
 $ErrorActionPreference = "Stop"
@@ -38,7 +38,7 @@ Step "Generating icons and version info"
 $version = (& $vpy -c "from src.version import VERSION; print(VERSION)").Trim()
 
 Step "Building application folder with PyInstaller"
-Remove-Item -Recurse -Force build, dist\QRStudioPro -ErrorAction SilentlyContinue
+Remove-Item -Recurse -Force build, dist\TLStudioPro -ErrorAction SilentlyContinue
 $env:QRSP_ONEFILE = ""
 & $vpy -m PyInstaller --noconfirm --distpath dist --workpath build packaging\qr_studio.spec
 if ($LASTEXITCODE) { Fail "PyInstaller failed" }
@@ -48,7 +48,7 @@ Step "Self-test of the built executable"
 # so it writes its report to %APPDATA%\QRStudioPro\selftest.txt; delete any old report first.
 $report = Join-Path $env:APPDATA "QRStudioPro\selftest.txt"
 Remove-Item $report -ErrorAction SilentlyContinue
-$proc = Start-Process -FilePath "dist\QRStudioPro\QRStudioPro.exe" -ArgumentList "--selftest" -Wait -PassThru
+$proc = Start-Process -FilePath "dist\TLStudioPro\TLStudioPro.exe" -ArgumentList "--selftest" -Wait -PassThru
 if (Test-Path $report) { Get-Content $report }
 if ($proc.ExitCode -ne 0 -or -not (Test-Path $report) -or -not (Select-String -Path $report -Pattern "RESULT: OK" -Quiet)) {
   Fail "The built app failed its self-test (exit code $($proc.ExitCode))."

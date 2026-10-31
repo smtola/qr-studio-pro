@@ -60,7 +60,7 @@ def load_project(path: str | os.PathLike) -> LoadResult:
     p = Path(path)
     try:
         if p.stat().st_size > MAX_PROJECT_BYTES:
-            raise ValidationError("This file is too large to be a QR Studio Pro project.")
+            raise ValidationError("This file is too large to be a TL Studio Pro project.")
         data = json.loads(p.read_text(encoding="utf-8"))
     except OSError:
         raise ValidationError(f"The project '{p.name}' could not be opened.") from None

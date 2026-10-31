@@ -86,6 +86,17 @@ QLabel#pill { background: %(panel)s; border: 1px solid %(border)s; border-radius
 QLabel#scanBadge { border-radius: 10px; padding: 3px 10px; font-weight: 600; font-size: 12px; background: %(info_bg)s; color: %(muted)s; }
 QLabel#scanBadge[status="ok"] { background: %(ok_bg)s; color: %(ok)s; }
 QLabel#scanBadge[status="fail"] { background: %(warn_bg)s; color: %(warn)s; }
+QLabel#hubTitle { font-size: 28px; font-weight: 600; }
+QListWidget { background: %(input)s; border: 1px solid %(border)s; border-radius: 10px; padding: 4px; outline: none; }
+QListWidget::item { padding: 6px 8px; border-radius: 7px; }
+QListWidget::item:selected { background: %(accent_soft)s; color: %(text)s; }
+QListWidget::item:hover { background: %(hover)s; }
+QListWidget#toolMenu { background: %(panel)s; border-radius: 14px; padding: 8px; }
+QListWidget#toolMenu::item { padding: 10px 12px; font-weight: 500; }
+QListWidget#toolMenu::item:selected { background: %(accent_soft)s; color: %(accent)s; font-weight: 600; }
+QWidget#toolCard { background: %(panel)s; border: 1px solid %(border)s; border-radius: 14px; }
+QTableWidget { background: %(input)s; border: 1px solid %(border)s; border-radius: 10px; gridline-color: %(border)s; }
+QHeaderView::section { background: %(panel2)s; border: none; border-bottom: 1px solid %(border)s; padding: 6px; font-weight: 600; }
 QLabel#emptyTitle { font-size: 18px; font-weight: 600; }
 
 /* ---- buttons & inputs ---- */

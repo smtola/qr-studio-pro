@@ -7,7 +7,7 @@ Help) compares the running version (shown in the window title, status bar and Ab
 1. You publish a new build plus `update.json` (the feed) on any HTTPS host, e.g. GitHub Releases.
 2. The app downloads `update.json`. If its `version` is newer, a dialog shows the release notes: **Update now / Later / Skip this version**.
 3. *Update now* downloads the installer for this computer, checks its **SHA-256** against the feed (a mismatch is discarded), asks to save unsaved work, then:
-   - **Windows:** runs `QRStudioPro-<ver>-Setup.exe /SILENT` over the existing install. The installer keeps the same `AppId`, so it **upgrades in place** (settings, presets and recent projects are untouched), closes the old app and starts the new one.
+   - **Windows:** runs `TLStudioPro-<ver>-Setup.exe /SILENT` over the existing install. The installer keeps the same `AppId`, so it **upgrades in place** (settings, presets and recent projects are untouched), closes the old app and starts the new one.
    - **macOS:** opens the new `.dmg`; the user drags the app onto Applications and chooses Replace. (Fully silent replacement on macOS needs a signed, notarized app and an updater framework such as Sparkle.)
 4. Privacy: only an HTTPS GET of `update.json` is made; nothing about the user, their content or logos is sent.
 

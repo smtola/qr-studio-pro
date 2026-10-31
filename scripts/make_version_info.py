@@ -20,9 +20,9 @@ VSVersionInfo(
       StringStruct('CompanyName', '{ORG_NAME}'),
       StringStruct('FileDescription', '{APP_NAME}'),
       StringStruct('FileVersion', '{VERSION}'),
-      StringStruct('InternalName', 'QRStudioPro'),
+      StringStruct('InternalName', 'TLStudioPro'),
       StringStruct('LegalCopyright', '{COPYRIGHT}'),
-      StringStruct('OriginalFilename', 'QRStudioPro.exe'),
+      StringStruct('OriginalFilename', 'TLStudioPro.exe'),
       StringStruct('ProductName', '{APP_NAME}'),
       StringStruct('ProductVersion', '{VERSION}')])]),
     VarFileInfo([VarStruct('Translation', [1033, 1200])])

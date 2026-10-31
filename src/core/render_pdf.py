@@ -86,8 +86,8 @@ def render_pdf(scene: Scene, width_px: int, dpi: int, title: str = "QR code") ->
     c = Canvas(buf, pagesize=(pt_w, pt_h), invariant=1, pageCompression=1)
     c.setTitle(title)
     c.setAuthor("")
-    c.setCreator("QR Studio Pro")
-    c.setProducer("QR Studio Pro")
+    c.setCreator("TL Studio Pro")
+    c.setProducer("TL Studio Pro")
     c.translate(0, pt_h)
     c.scale(k, -k)  # y-down logical units, same as the SVG and raster back-ends
 

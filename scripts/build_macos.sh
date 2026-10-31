@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Build QR Studio Pro on macOS: .app bundle and drag-and-drop .dmg.
+# Build TL Studio Pro on macOS: .app bundle and drag-and-drop .dmg.
 #   scripts/build_macos.sh                 # host architecture (arm64 on Apple Silicon, x86_64 on Intel)
 #   ARCH=x86_64 scripts/build_macos.sh     # only works with an x86_64 Python (e.g. under Rosetta)
 #   SKIP_TESTS=1 scripts/build_macos.sh
-# Output goes to dist/:  "QR Studio Pro.app" and QRStudioPro-<version>-<arch>.dmg
+# Output goes to dist/:  "TL Studio Pro.app" and TLStudioPro-<version>-<arch>.dmg
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -38,13 +38,13 @@ python scripts/make_icons.py
 VERSION=$(python -c 'from src.version import VERSION; print(VERSION)')
 
 step "Building .app with PyInstaller"
-rm -rf build "dist/QR Studio Pro.app" dist/QRStudioPro
+rm -rf build "dist/TL Studio Pro.app" dist/TLStudioPro
 QRSP_TARGET_ARCH="$ARCH" python -m PyInstaller --noconfirm --distpath dist --workpath build packaging/qr_studio.spec
-APP="dist/QR Studio Pro.app"
+APP="dist/TL Studio Pro.app"
 [[ -d "$APP" ]] || fail "PyInstaller did not produce $APP"
 
 step "Self-test of the built app"
-"$APP/Contents/MacOS/QRStudioPro" --selftest || fail "The built app failed its self-test."
+"$APP/Contents/MacOS/TLStudioPro" --selftest || fail "The built app failed its self-test."
 
 step "Signing"
 if [[ -n "${CODESIGN_IDENTITY:-}" ]]; then
@@ -57,9 +57,9 @@ else
 fi
 
 step "Building .dmg"
-DMG="dist/QRStudioPro-${VERSION}-${ARCH}.dmg"
+DMG="dist/TLStudioPro-${VERSION}-${ARCH}.dmg"
 rm -f "$DMG"
-dmgbuild -s packaging/dmg_settings.py -D app="$APP" "QR Studio Pro" "$DMG" || fail "dmgbuild failed"
+dmgbuild -s packaging/dmg_settings.py -D app="$APP" "TL Studio Pro" "$DMG" || fail "dmgbuild failed"
 if [[ -n "${CODESIGN_IDENTITY:-}" ]]; then codesign --force --sign "$CODESIGN_IDENTITY" "$DMG"; fi
 
 step "Done"

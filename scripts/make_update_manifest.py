@@ -50,9 +50,9 @@ def main() -> int:
             data["assets"].update(old.get("assets", {}))
             data["notes"] = data["notes"] or old.get("notes", "")
     found = {
-        "windows": dist / f"QRStudioPro-{a.version}-Setup.exe",
-        "macos-arm64": dist / f"QRStudioPro-{a.version}-arm64.dmg",
-        "macos-x86_64": dist / f"QRStudioPro-{a.version}-x86_64.dmg",
+        "windows": dist / f"TLStudioPro-{a.version}-Setup.exe",
+        "macos-arm64": dist / f"TLStudioPro-{a.version}-arm64.dmg",
+        "macos-x86_64": dist / f"TLStudioPro-{a.version}-x86_64.dmg",
     }
     for key, path in found.items():
         if path.is_file():

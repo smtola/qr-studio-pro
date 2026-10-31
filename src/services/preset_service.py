@@ -51,7 +51,7 @@ def load_preset_file(path: str | Path) -> dict:
     except (json.JSONDecodeError, UnicodeDecodeError):
         raise ValidationError(f"'{p.name}' is not a valid preset file.") from None
     if not isinstance(data, dict) or data.get("kind") != PRESET_KIND:
-        raise ValidationError(f"'{p.name}' is not a QR Studio Pro brand preset.")
+        raise ValidationError(f"'{p.name}' is not a TL Studio Pro brand preset.")
     return data
 
 

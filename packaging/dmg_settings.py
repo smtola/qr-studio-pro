@@ -1,10 +1,10 @@
 """dmgbuild settings: drag-and-drop installer window.
 
-    dmgbuild -s packaging/dmg_settings.py -D app="dist/QR Studio Pro.app" "QR Studio Pro" dist/QRStudioPro-1.1.0-<arch>.dmg
+    dmgbuild -s packaging/dmg_settings.py -D app="dist/TL Studio Pro.app" "TL Studio Pro" dist/TLStudioPro-1.2.0-<arch>.dmg
 """
 import os
 
-app_path = defines.get("app", "dist/QR Studio Pro.app")  # noqa: F821 - `defines` is injected by dmgbuild
+app_path = defines.get("app", "dist/TL Studio Pro.app")  # noqa: F821 - `defines` is injected by dmgbuild
 app_name = os.path.basename(app_path)
 
 format = "UDZO"

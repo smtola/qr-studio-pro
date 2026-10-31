@@ -1,4 +1,4 @@
-"""QR Studio Pro - application entry point.
+"""TL Studio Pro - application entry point.
 
     python app.py                 start the desktop app
     python app.py my.qrstudio.json   open a project
@@ -28,7 +28,6 @@ def main(argv: list[str]) -> int:
     from PySide6.QtWidgets import QApplication
 
     from src.services.app_prefs import AppPrefs
-    from src.ui.main_window import MainWindow
     from src.ui.main_window import check_icon_path
     from src.ui.theme import apply_theme, resolve_mode, setup_fonts
     from src.utils.logging_config import get_logger, setup_logging
@@ -47,12 +46,13 @@ def main(argv: list[str]) -> int:
 
     from src import i18n
     i18n.install(app, prefs.language)
-    win = MainWindow(prefs)
-    i18n.retranslate(win)
-    win.show()
+    from src.ui.hub import HubWindow
+    hub = HubWindow(prefs)
+    i18n.retranslate(hub)
+    hub.show()
     for arg in argv[1:]:
         if not arg.startswith("-") and arg.lower().endswith((".qrsp", ".json")):
-            win.open_project(arg)
+            hub.open_tool("qr", arg)          # a project file opens straight in QR Studio
             break
     log.info("started (log: %s)", log_path.name)
     return app.exec()

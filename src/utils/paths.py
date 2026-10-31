@@ -5,7 +5,7 @@ import os
 import sys
 from pathlib import Path
 
-from ..version import APP_NAME
+from ..version import DATA_DIR_LINUX, DATA_DIR_MAC, DATA_DIR_WIN, APP_NAME
 
 
 def resource_path(*parts: str) -> Path:
@@ -20,10 +20,10 @@ def user_data_dir() -> Path:
         return Path(override)
     home = Path.home()
     if sys.platform == "win32":
-        return Path(os.environ.get("APPDATA", home / "AppData" / "Roaming")) / APP_NAME.replace(" ", "")
+        return Path(os.environ.get("APPDATA", home / "AppData" / "Roaming")) / DATA_DIR_WIN
     if sys.platform == "darwin":
-        return home / "Library" / "Application Support" / APP_NAME
-    return Path(os.environ.get("XDG_CONFIG_HOME", home / ".config")) / "qr-studio-pro"
+        return home / "Library" / "Application Support" / DATA_DIR_MAC
+    return Path(os.environ.get("XDG_CONFIG_HOME", home / ".config")) / DATA_DIR_LINUX
 
 
 def presets_dir() -> Path:

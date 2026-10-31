@@ -67,7 +67,7 @@ def build_print_sheet(items: list[ProjectSettings], out_path: str | os.PathLike,
     pages = 0
     try:
         c = canvas.Canvas(tmp, pagesize=(pw * MM, ph * MM))
-        c.setTitle("QR Studio Pro print sheet")
+        c.setTitle("TL Studio Pro print sheet")
         px = int(cell_mm / 25.4 * DPI)
         for i, s in enumerate(items):
             slot = i % lay.per_page

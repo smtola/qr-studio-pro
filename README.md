@@ -1,7 +1,19 @@
-# QR Studio Pro
+# TL Studio Pro
 
-Offline desktop app for designing QR codes with a **centre logo**, **custom colours / finder eyes** and a **frame designer**.
-Everything runs locally – no server, account, subscription or database. Python 3.12+, PySide6, `qrcode`, Pillow, ReportLab.
+**TL Studio Pro** is an offline desktop toolbox with a home screen of tools:
+
+| Tool | What it does |
+|---|---|
+| **QR Studio Pro** | Design QR codes with a centre logo, colours, finder eyes, frames, templates, batch CSV, print sheets, live scan check |
+| **Convert Studio** | Excel/CSV to PDF, PDF to Word, PDF to Excel, Word to PDF, Excel to CSV, images to PDF, PDF to images, merge and split PDF |
+| **Convert Media** | Images (convert, resize, crop, rotate, compress), GIF maker/editor, video to GIF, convert/trim video, extract audio. Inspired by the tools on ezgif.com, but they run on your computer |
+| **PDF to Form** | Detect the blanks in an ordinary PDF, turn them into real fillable fields, then fill forms by hand or from a CSV (one PDF per row) |
+| Media Downloader, AI Agent | shown as "Coming soon" – planned for the next update |
+
+Everything runs locally – no server, account, subscription or database. Python 3.12+, PySide6, `qrcode`, Pillow, ReportLab, pypdf, pdfplumber, python-docx, openpyxl, FFmpeg (bundled via imageio-ffmpeg).
+Formerly "QR Studio Pro" (versions before 1.2.0). Your settings, presets and projects carry over.
+
+## QR Studio
 
 | | |
 |---|---|
@@ -43,15 +55,22 @@ python -m pytest
 
 | Platform | Command | Output (`dist/`) |
 |---|---|---|
-| Windows 10/11 | `powershell -ExecutionPolicy Bypass -File scripts\build_windows.ps1 [-Portable]` | `QRStudioPro\` app folder, `QRStudioPro-<ver>-Setup.exe` (Inno Setup 6 required), optional `QRStudioPro-portable.exe` |
-| macOS 11+ | `scripts/build_macos.sh` | `QR Studio Pro.app`, `QRStudioPro-<ver>-<arch>.dmg` |
+| Windows 10/11 | `powershell -ExecutionPolicy Bypass -File scripts\build_windows.ps1 [-Portable]` | `TLStudioPro\` app folder, `TLStudioPro-<ver>-Setup.exe` (Inno Setup 6 required), optional `TLStudioPro-portable.exe` |
+| macOS 11+ | `scripts/build_macos.sh` | `TL Studio Pro.app`, `TLStudioPro-<ver>-<arch>.dmg` |
 
 Each script checks Python, creates `.venv-build`, runs the tests, builds with PyInstaller, runs `--selftest` **on the built
 app**, then packages. Apple Silicon and Intel DMGs are built separately (`macos-14` / `macos-13` runners in
 `.github/workflows/build.yml`). Details, signing and notarization: [docs/PACKAGING.md](docs/PACKAGING.md).
 
 End users do not need Python. The installer is per-user (no administrator rights), adds a Start-menu entry, optional
-desktop shortcut and a clean uninstaller; settings in `%APPDATA%\QRStudioPro` are kept on uninstall.
+desktop shortcut and a clean uninstaller; settings in `%APPDATA%\TLStudioPro` are kept on uninstall.
+
+## Converters – notes
+
+- **Excel/Word to PDF** gives the best layout when LibreOffice (free) is installed; without it Excel/CSV use a built-in renderer (values, bold, fills, column widths) and Word to PDF is unavailable.
+- **PDF to Word / Excel** works on PDFs with real text. Scanned pages are inserted as pictures – there is no OCR. Results are a best effort: check complex layouts.
+- **Video tools** use the FFmpeg that ships with the app (or one found on your computer).
+- Nothing is uploaded; output files are never overwritten (`name (2).pdf`).
 
 ## Using the app
 
@@ -76,7 +95,7 @@ one – no uninstall needed. This needs a feed address configured once; see [doc
 - **Preview shows an error banner** – the content is invalid (e.g. malformed URL); the last good image is dimmed.
 - **Code does not scan** – read the *Scan reliability* card: low contrast, inverted colours, circle eyes, dots, big logos, tiny modules or a small quiet zone all reduce reliability. No QR code is guaranteed to scan everywhere; test with several phones at the real print size.
 - **Text in a frame shows a different font** – the chosen font is not installed; a similar one is substituted (a hint appears under the font box). Khmer text uses a Khmer-capable font when one is installed.
-- **Logs** – `%APPDATA%\QRStudioPro\logs`, `~/Library/Logs/QR Studio Pro`, or `~/.config/qr-studio-pro/logs` (JSON lines).
+- **Logs** – `%APPDATA%\TLStudioPro\logs`, `~/Library/Logs/TL Studio Pro`, or `~/.config/qr-studio-pro/logs` (JSON lines).
 - **Windows SmartScreen / macOS Gatekeeper warnings** – expected for unsigned builds; see docs/PACKAGING.md.
 
 ## Security & privacy
@@ -92,7 +111,8 @@ app.py                  entry point (--selftest, --version)
 src/core/               qr_generator · logo_composer · frame_renderer (layout → Scene) · render_raster/svg/pdf · export_manager · scan_advisor · scan_check · batch · print_sheet · color_manager · fonts
 src/models/             project_settings (serialisable dataclasses, sanitising)
 src/services/           project_service · preset_service · templates · app_prefs · history (undo/redo)
-src/ui/                 PySide6 window, panels, dialogs (tools_dialogs), theme, icons
+src/convert/            documents · pdf_tools · media · forms (pure Python converters)
+src/ui/                 PySide6 hub, windows, panels, dialogs (tools_dialogs), theme, icons
 src/i18n.py             English / Khmer interface translation
 src/utils/              validation · paths · logging
 tests/                  pytest (unit, export, UI offscreen) – decodes exports with OpenCV as an independent scanner

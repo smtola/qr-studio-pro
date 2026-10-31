@@ -1,6 +1,6 @@
 """Headless self-test used to verify installed/packaged builds.
 
-    QR Studio Pro --selftest
+    TL Studio Pro --selftest
 
 Renders a design with centre logo, colours, frame and Khmer text, exports PNG, JPG,
 SVG and PDF into a temporary folder, checks the files and (when the optional
@@ -91,6 +91,33 @@ def run_selftest() -> int:
             return "decoded OK"
 
         step("scan exported PNG", scan)
+
+        def converters():
+            import openpyxl
+            from reportlab.pdfgen import canvas
+
+            from src.convert.documents import excel_to_pdf, pdf_to_excel, pdf_to_word
+            from src.convert.forms import detect_fields, make_fillable
+            from src.convert.media import convert_image
+            from src.convert.pdf_tools import pdf_to_images
+            wb = openpyxl.Workbook()
+            wb.active.append(["a", "b"])
+            wb.active.append([1, 2])
+            wb.save(tmp / "t.xlsx")
+            pdf = excel_to_pdf(tmp / "t.xlsx", tmp, prefer_office=False)
+            pdf_to_word(pdf, tmp)
+            pdf_to_excel(pdf, tmp)
+            pdf_to_images(pdf, tmp, dpi=50)
+            convert_image(tmp / "out.png", tmp, fmt="webp")
+            c = canvas.Canvas(str(tmp / "blank.pdf"))
+            c.drawString(72, 700, "Name:")
+            c.line(120, 698, 300, 698)
+            c.save()
+            make_fillable(tmp / "blank.pdf", tmp, detect_fields(tmp / "blank.pdf"))
+            from src.convert.common import find_ffmpeg
+            return "ffmpeg " + ("found" if find_ffmpeg() else "not found")
+
+        step("converters (excel/pdf/word/images/forms)", converters)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 

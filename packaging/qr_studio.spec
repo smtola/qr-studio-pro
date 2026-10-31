@@ -1,5 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
-"""PyInstaller spec for QR Studio Pro (Windows one-folder + optional portable one-file, macOS .app).
+"""PyInstaller spec for TL Studio Pro (Windows one-folder + optional portable one-file, macOS .app).
 
 Run from the project root through scripts/build_windows.ps1 or scripts/build_macos.sh.
 Environment switches:
@@ -17,10 +17,20 @@ from src.version import APP_ID, APP_NAME, COPYRIGHT, VERSION  # noqa: E402
 
 ONEFILE = os.environ.get("QRSP_ONEFILE") == "1"
 IS_WIN, IS_MAC = sys.platform == "win32", sys.platform == "darwin"
-NAME = "QRStudioPro"
+NAME = "TLStudioPro"
+
+from PyInstaller.utils.hooks import collect_data_files, collect_dynamic_libs, collect_submodules  # noqa: E402
 
 datas = [(str(ROOT / "assets"), "assets")]
-hiddenimports = ["cv2", "numpy", "PySide6.QtSvg", "reportlab.pdfbase._fontdata", "reportlab.graphics.barcode"]
+binaries = []
+for pkg in ("imageio_ffmpeg", "pypdfium2", "pypdfium2_raw", "docx", "pdfminer", "openpyxl"):
+    try:
+        datas += collect_data_files(pkg)
+        binaries += collect_dynamic_libs(pkg)
+    except Exception:  # noqa: BLE001 - optional package missing in this build environment
+        pass
+hiddenimports = collect_submodules("pdfminer") + collect_submodules("pdfplumber") + [
+    "pypdf", "pypdfium2", "docx", "openpyxl", "imageio_ffmpeg", "lxml", "lxml.etree", "cv2", "numpy", "PySide6.QtSvg", "reportlab.pdfbase._fontdata", "reportlab.graphics.barcode"]
 excludes = [
     "pytest", "tkinter", "unittest", "matplotlib", "scipy", "pandas",   # dev / unused
     "PySide6.QtWebEngineCore", "PySide6.QtWebEngineWidgets", "PySide6.QtQml", "PySide6.QtQuick",
@@ -30,6 +40,7 @@ excludes = [
 a = Analysis(
     [str(ROOT / "app.py")],
     pathex=[str(ROOT)],
+    binaries=binaries,
     datas=datas,
     hiddenimports=hiddenimports,
     excludes=excludes,
@@ -67,7 +78,7 @@ else:
                 "LSMinimumSystemVersion": "11.0",
                 "LSApplicationCategoryType": "public.app-category.graphics-design",
                 "CFBundleDocumentTypes": [{
-                    "CFBundleTypeName": "QR Studio Project",
+                    "CFBundleTypeName": "TL Studio Project",
                     "CFBundleTypeExtensions": ["qrsp"],
                     "CFBundleTypeRole": "Editor",
                 }],

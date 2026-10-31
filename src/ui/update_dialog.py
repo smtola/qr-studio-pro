@@ -163,7 +163,7 @@ class UpdateDialog(QDialog):
             QApplication.quit()
         else:
             QMessageBox.information(self.parent(), "Finish the update",
-                                    "The update disk image has been opened.\n\nDrag “QR Studio Pro” onto the "
+                                    "The update disk image has been opened.\n\nDrag “TL Studio Pro” onto the "
                                     "Applications folder and choose Replace, then start the app again.")
 
 

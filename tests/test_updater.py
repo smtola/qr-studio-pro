@@ -49,14 +49,14 @@ def test_check_requires_https_and_url(monkeypatch):
 @pytest.fixture
 def server(tmp_path):
     payload = b"MZ" + b"installer-bytes" * 5000
-    files = {"/QRStudioPro-9.0.0-Setup.exe": payload}
+    files = {"/TLStudioPro-9.0.0-Setup.exe": payload}
 
     class H(http.server.BaseHTTPRequestHandler):
         def log_message(self, *a): pass
         def do_GET(self):
             if self.path == "/update.json":
                 body = json.dumps({"version": "9.0.0", "notes": "New", "assets": {updater.platform_key(): {
-                    "url": f"http://127.0.0.1:{self.server.server_port}/QRStudioPro-9.0.0-Setup.exe",
+                    "url": f"http://127.0.0.1:{self.server.server_port}/TLStudioPro-9.0.0-Setup.exe",
                     "sha256": hashlib.sha256(payload).hexdigest()}}}).encode()
             elif self.path in files:
                 body = files[self.path]
@@ -91,7 +91,7 @@ def test_check_download_and_verify(server):
 
 def test_tampered_download_is_discarded(server):
     srv, _ = server
-    a = Asset(f"http://127.0.0.1:{srv.server_port}/QRStudioPro-9.0.0-Setup.exe", "0" * 64)
+    a = Asset(f"http://127.0.0.1:{srv.server_port}/TLStudioPro-9.0.0-Setup.exe", "0" * 64)
     with pytest.raises(UpdateError, match="integrity"):
         download_asset(a, allow_insecure=True)
 
