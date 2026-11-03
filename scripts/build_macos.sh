@@ -26,7 +26,10 @@ step "Creating virtual environment (.venv-build)"
 # shellcheck disable=SC1091
 source .venv-build/bin/activate
 pip install --upgrade pip >/dev/null
-pip install -r requirements-dev.txt
+# Never compile cryptography from source here: it would link a Homebrew OpenSSL that PyInstaller can't bundle consistently.
+PIP_ONLY_BINARY=cryptography # Never compile cryptography from source here (would link a Homebrew OpenSSL PyInstaller can't bundle consistently)
+PIP_ONLY_BINARY=cryptography # Never compile cryptography from source here (would link a Homebrew OpenSSL PyInstaller can't bundle consistently)
+PIP_ONLY_BINARY=cryptography pip install -r requirements-dev.txt
 
 if [[ "${SKIP_TESTS:-0}" != "1" ]]; then
   step "Running tests"
