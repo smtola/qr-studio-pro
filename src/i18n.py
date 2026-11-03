@@ -161,6 +161,30 @@ KM: dict[str, str] = {
     "Clean Minimal": "សាមញ្ញស្អាត", "Restaurant Menu": "ម៉ឺនុយភោជនីយដ្ឋាន", "Business Card": "ប័ណ្ណអាជីវកម្ម", "Wi-Fi Poster": "ផ្ទាំងប័ទ្ម Wi-Fi",
     "Event Ticket": "សំបុត្រព្រឹត្តិការណ៍", "Social Follow": "តាមដានបណ្តាញសង្គម", "Ocean Gradient": "ក្រឌីយ៉ង់មហាសមុទ្រ",
     "Fresh Green": "បៃតងស្រស់", "Sunset": "ថ្ងៃលិច", "Bold Sticker": "ស្ទីគ័រដិត",
+    # downloader & AI agent (added in 1.3.0; draft Khmer, needs native review)
+    "Paste public links from YouTube, TikTok, Facebook, Instagram or X (one per line).":
+        "បិទភ្ជាប់តំណសាធារណៈពី YouTube, TikTok, Facebook, Instagram ឬ X (មួយជួរមួយតំណ)។",
+    "Only download content that you own, that is in the public domain, or that you have permission to keep. Platform terms of service may forbid downloads, and copyright law applies.":
+        "ទាញយកតែមាតិកាដែលអ្នកជាម្ចាស់ ស្ថិតក្នុងវិមាត្រសាធារណៈ ឬអ្នកមានការអនុញ្ញាតឱ្យរក្សាទុក។ លក្ខខណ្ឌសេវាកម្មរបស់វេទិកាអាចហាមឃាត់ការទាញយក ហើយច្បាប់រក្សាសិទ្ធិត្រូវបានអនុវត្ត។",
+    "I own this content or have permission to download it": "ខ្ញុំជាម្ចាស់មាតិកានេះ ឬមានការអនុញ្ញាតឱ្យទាញយក",
+    "Download as": "ទាញយកជា", "Video (MP4)": "វីដេអូ (MP4)", "Audio only": "សំឡេងតែប៉ុណ្ណោះ", "Picture / thumbnail": "រូបភាព / រូបតូច",
+    "Best available": "ល្អបំផុតដែលមាន", "Up to 1080p": "រហូតដល់ 1080p", "Up to 720p": "រហូតដល់ 720p", "Up to 480p": "រហូតដល់ 480p",
+    "Up to 360p": "រហូតដល់ 360p", "Audio format": "ទ្រង់ទ្រាយសំឡេង", "Save to folder": "រក្សាទុកក្នុងថត", "Download": "ទាញយក",
+    "Open folder": "បើកថត", "Cancel": "បោះបង់",
+    "AI settings": "ការកំណត់ AI", "API key": "កូនសោ API", "Model": "ម៉ូដែល", "Remove key": "លុបកូនសោ", "Settings": "ការកំណត់",
+    "New chat": "ការជជែកថ្មី", "Send": "ផ្ញើ", "Stop": "ឈប់", "Work folder:": "ថតការងារ៖", "Work folder": "ថតការងារ", "Change…": "ប្តូរ…",
+    "Open": "បើក", "You": "អ្នក", "Tool": "ឧបករណ៍", "Error": "កំហុស", "Thinking…": "កំពុងគិត…", "Stopping…": "កំពុងឈប់…", "Running": "កំពុងដំណើរការ",
+    "Allow this action?": "អនុញ្ញាតសកម្មភាពនេះឬទេ?",
+    "Add your Claude API key in Settings to start chatting.": "បន្ថែមកូនសោ Claude API របស់អ្នកក្នុងការកំណត់ ដើម្បីចាប់ផ្តើមជជែក។",
+    "That does not look like a Claude API key (it starts with sk-ant-).": "នេះមិនមែនជាកូនសោ Claude API ទេ (វាចាប់ផ្តើមដោយ sk-ant-)។",
+    "The work folder does not exist.": "ថតការងារមិនមានទេ។",
+    "Use your own Claude API key (from console.anthropic.com). It is stored only on this computer and sent only to Anthropic.":
+        "ប្រើកូនសោ Claude API ផ្ទាល់ខ្លួនរបស់អ្នក (ពី console.anthropic.com)។ វាត្រូវបានរក្សាទុកតែលើកុំព្យូទ័រនេះ ហើយផ្ញើទៅ Anthropic តែប៉ុណ្ណោះ។",
+    "Ask in plain words, for example: make a QR code for https://example.com": "សួរជាពាក្យធម្មតា ឧទាហរណ៍៖ បង្កើត QR code សម្រាប់ https://example.com",
+    "Your messages and the tool results are sent to Anthropic using your own API key. File contents are not sent unless a tool reads them. The agent can only use files inside the work folder, and asks before it writes or downloads.":
+        "សាររបស់អ្នក និងលទ្ធផលឧបករណ៍ត្រូវបានផ្ញើទៅ Anthropic ដោយប្រើកូនសោ API របស់អ្នក។ មាតិកាឯកសារមិនត្រូវបានផ្ញើទេ លុះត្រាតែឧបករណ៍អានវា។ ភ្នាក់ងារប្រើបានតែឯកសារក្នុងថតការងារ ហើយសួរមុនពេលសរសេរ ឬទាញយក។",
+    "Hi! Tell me what to do with your files: make QR codes, convert Excel/Word/PDF, convert pictures or videos, fill PDF forms, or download media you have the right to keep. I will ask before I change anything.":
+        "សួស្តី! ប្រាប់ខ្ញុំថាត្រូវធ្វើអ្វីជាមួយឯកសាររបស់អ្នក៖ បង្កើត QR កូដ បម្លែង Excel/Word/PDF បម្លែងរូបភាព ឬវីដេអូ បំពេញទម្រង់ PDF ឬទាញយកមេឌៀដែលអ្នកមានសិទ្ធិរក្សាទុក។ ខ្ញុំនឹងសួរមុនពេលផ្លាស់ប្តូរអ្វីមួយ។",
 }
 
 _lang = "en"

@@ -1,7 +1,7 @@
-; Inno Setup 6 script. Compile with:  iscc /DAppVersion=1.2.0 packaging\windows_installer.iss
+; Inno Setup 6 script. Compile with:  iscc /DAppVersion=1.3.0 packaging\windows_installer.iss
 ; (scripts\build_windows.ps1 does this for you.) Installs per-user by default, no administrator rights needed.
 #ifndef AppVersion
-  #define AppVersion "1.2.0"
+  #define AppVersion "1.3.0"
 #endif
 #define AppName "TL Studio Pro"
 #define AppExe "TLStudioPro.exe"
@@ -50,7 +50,7 @@ Root: HKA; Subkey: "Software\Classes\TLStudioPro.Project\DefaultIcon"; ValueType
 Root: HKA; Subkey: "Software\Classes\TLStudioPro.Project\shell\open\command"; ValueType: string; ValueData: """{app}\{#AppExe}"" ""%1"""
 
 [InstallDelete]
-; the app was called "QR Studio Pro" before 1.2.0 - remove its old executable when upgrading in place
+; the app was called "QR Studio Pro" before 1.3.0 - remove its old executable when upgrading in place
 Type: files; Name: "{app}\QRStudioPro.exe"
 
 [Run]

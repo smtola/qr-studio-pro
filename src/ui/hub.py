@@ -35,11 +35,11 @@ class ToolDef:
 TOOLS: tuple[ToolDef, ...] = (
     ToolDef("qr", "QR STUDIO PRO", "Design QR codes with logo, colours and frames", "qr", ("#3E6A93", "#2F5578")),
     ToolDef("download", "Download Image & Video", "Save pictures and videos you have the right to keep", "download",
-            ("#3E6A93", "#2F5578"), available=False),
+            ("#3E6A93", "#2F5578")),
     ToolDef("convert", "Convert Studio", "Excel, Word and PDF conversions, merge and split", "convert", ("#3E6A93", "#2F5578")),
     ToolDef("media", "Convert Media", "Images, GIFs and videos: convert, resize, trim", "film", ("#3E6A93", "#2F5578")),
     ToolDef("form", "PDF to Form", "Turn a PDF into a fillable form and fill it", "form", ("#3E6A93", "#2F5578")),
-    ToolDef("ai", "AI Agent", "Ask in plain words and let the agent run the tools", "sparkles", ("#3E6A93", "#2F5578"), available=False),
+    ToolDef("ai", "AI Agent", "Ask in plain words and let the agent run the tools", "sparkles", ("#3E6A93", "#2F5578")),
 )
 
 
@@ -308,6 +308,12 @@ class HubWindow(QMainWindow):
         if key == "form":
             from .form_window import pdf_to_form
             return pdf_to_form(self.prefs)
+        if key == "download":
+            from .downloader_window import media_downloader
+            return media_downloader(self.prefs)
+        if key == "ai":
+            from .ai_window import ai_agent
+            return ai_agent(self.prefs)
         factory = getattr(self, "factories", {}).get(key)
         return factory(self.prefs) if factory else None
 

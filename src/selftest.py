@@ -118,6 +118,19 @@ def run_selftest() -> int:
             return "ffmpeg " + ("found" if find_ffmpeg() else "not found")
 
         step("converters (excel/pdf/word/images/forms)", converters)
+
+        def phase2():
+            import yt_dlp  # noqa: F401  (bundled extractor modules)
+            from src.ai.client import ClaudeClient
+            from src.ai.tools import Toolbox
+            from src.convert.downloader import detect_platform, split_urls
+            assert split_urls("https://youtu.be/x") and detect_platform("https://x.com/a") == "X"
+            tb = Toolbox(tmp, lambda _t: True)
+            assert "Created" in tb.run("make_qr", {"type": "text", "value": "hello", "filename": "st.png"})
+            assert ClaudeClient("k", "m", transport=lambda *a: (200, b'{"content": []}')).create([]) == {"content": []}
+            return "yt-dlp " + yt_dlp.version.__version__
+
+        step("downloader + AI agent (offline parts)", phase2)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
 

@@ -29,7 +29,7 @@ for pkg in ("imageio_ffmpeg", "pypdfium2", "pypdfium2_raw", "docx", "pdfminer", 
         binaries += collect_dynamic_libs(pkg)
     except Exception:  # noqa: BLE001 - optional package missing in this build environment
         pass
-hiddenimports = collect_submodules("pdfminer") + collect_submodules("pdfplumber") + [
+hiddenimports = collect_submodules("yt_dlp") + collect_submodules("pdfminer") + collect_submodules("pdfplumber") + [
     "pypdf", "pypdfium2", "docx", "openpyxl", "imageio_ffmpeg", "lxml", "lxml.etree", "cv2", "numpy", "PySide6.QtSvg", "reportlab.pdfbase._fontdata", "reportlab.graphics.barcode"]
 excludes = [
     "pytest", "tkinter", "unittest", "matplotlib", "scipy", "pandas",   # dev / unused

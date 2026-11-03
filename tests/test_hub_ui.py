@@ -50,7 +50,7 @@ def test_hub_lists_tools_and_title(hub):
 
 
 def test_open_each_tool_once(hub, qapp):
-    for key in ("qr", "convert", "media", "form"):
+    for key in ("qr", "convert", "media", "form", "download", "ai"):
         w1 = hub.open_tool(key)
         assert w1 is not None and w1.isVisible()
         assert hub.open_tool(key) is w1                      # raised, not duplicated
@@ -61,9 +61,9 @@ def test_unavailable_tools_say_so(hub, monkeypatch):
     from PySide6.QtWidgets import QMessageBox
     shown = []
     monkeypatch.setattr(QMessageBox, "information", lambda *a, **k: shown.append(a[2]))
+    hub.set_available("ai", False)
     assert hub.open_tool("ai") is None and shown
     hub.set_available("ai", True)
-    hub.factories = {"ai": lambda prefs: __import__("PySide6.QtWidgets", fromlist=["QWidget"]).QWidget()}
     assert hub.open_tool("ai") is not None
 
 
@@ -189,3 +189,72 @@ def test_fill_page_reports_non_form(hub, tmp_path):
     make_text_pdf(pdf, 1)
     fill.files.add([pdf])
     assert not fill.save_btn.isEnabled() and "no fillable" in fill.info.text().lower()
+
+
+def test_downloader_window_flow(hub, qapp, tmp_path, monkeypatch):
+    w = hub.open_tool("download")
+    assert not w.run_btn.isEnabled()
+    w.urls.setPlainText("https://youtu.be/abc\nnot a link\nhttps://x.com/a/status/1")
+    assert w.links() == ["https://youtu.be/abc", "https://x.com/a/status/1"]
+    assert not w.run_btn.isEnabled()                       # rights box not ticked
+    w.agree.setChecked(True)
+    assert w.run_btn.isEnabled()
+    w.out.setText(str(tmp_path))
+    from src.convert.common import ConvertError
+
+    def fake(url, out, kind, quality, afmt, progress=None, cancel=None):
+        if "x.com" in url:
+            raise ConvertError("This link needs a sign-in")
+        p = out / "clip.mp4"
+        p.write_bytes(b"1")
+        progress(1.0, "")
+        return [p]
+    w.start(downloader=fake)
+    assert pump(qapp, 10, lambda: not w._busy)
+    assert [p.name for p in w.results] == ["clip.mp4"] and "sign-in" in w.info.text()
+    w.kind.setCurrentIndex(1)
+    assert w.afmt.isEnabled() and not w.quality.isEnabled()
+
+
+def test_ai_window_chat_with_mock_api(hub, qapp, tmp_path, monkeypatch):
+    import json
+    from src.ai import keystore
+    from src.ai.client import ClaudeClient
+    from src.ui.ai_window import AIWindow
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    w = AIWindow(hub.prefs)
+    w.work_dir = str(tmp_path)
+    assert not w.send_btn.isEnabled() and not w.key_note.isHidden()      # no key yet
+    keystore.save("sk-ant-abcdefghijklmnopqrstuvwxyz")
+    w._refresh()
+    assert w.send_btn.isEnabled()
+    replies = [
+        (200, {"content": [{"type": "tool_use", "id": "1", "name": "make_qr",
+                            "input": {"type": "url", "value": "https://example.com", "filename": "z.png"}}], "stop_reason": "tool_use"}),
+        (200, {"content": [{"type": "text", "text": "All done <b>"}], "stop_reason": "end_turn"}),
+    ]
+    w.client_factory = lambda: ClaudeClient("sk-ant-k", "m", transport=lambda *a: (replies[0][0], json.dumps(replies.pop(0)[1]).encode()))
+    w._confirm_override = lambda t: True
+    w.input.setPlainText("make qr")
+    w.send()
+    assert pump(qapp, 20, lambda: not w._busy)
+    assert (tmp_path / "z.png").exists()
+    text = w.chat.toPlainText()
+    assert "make qr" in text and "All done <b>" in text            # HTML is escaped, not rendered
+    assert "sk-ant" not in text
+    w.close()
+
+
+def test_ai_window_shows_friendly_error_and_keeps_history_clean(hub, qapp, tmp_path):
+    from src.ai import keystore
+    from src.ai.client import ClaudeClient
+    from src.ui.ai_window import AIWindow
+    keystore.save("sk-ant-abcdefghijklmnopqrstuvwxyz")
+    w = AIWindow(hub.prefs)
+    w.work_dir = str(tmp_path)
+    w.client_factory = lambda: ClaudeClient("sk-ant-k", "m", transport=lambda *a: (401, b'{"error":{"message":"bad"}}'))
+    w.input.setPlainText("hi")
+    w.send()
+    assert pump(qapp, 10, lambda: not w._busy)
+    assert "rejected" in w.chat.toPlainText() and w.history == [] and w.send_btn.isEnabled()
+    w.close()

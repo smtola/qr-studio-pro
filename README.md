@@ -8,7 +8,8 @@
 | **Convert Studio** | Excel/CSV to PDF, PDF to Word, PDF to Excel, Word to PDF, Excel to CSV, images to PDF, PDF to images, merge and split PDF |
 | **Convert Media** | Images (convert, resize, crop, rotate, compress), GIF maker/editor, video to GIF, convert/trim video, extract audio. Inspired by the tools on ezgif.com, but they run on your computer |
 | **PDF to Form** | Detect the blanks in an ordinary PDF, turn them into real fillable fields, then fill forms by hand or from a CSV (one PDF per row) |
-| Media Downloader, AI Agent | shown as "Coming soon" – planned for the next update |
+| **Download Image & Video** | Save public videos, audio or pictures from YouTube, TikTok, Facebook, Instagram and X (powered by yt-dlp). Public links only; you must own the content or have permission to keep it |
+| **AI Agent** | Chat in plain words (English or Khmer) and let the agent run the tools above. Uses **your own Claude API key**; works only inside a work folder you choose and asks before writing or downloading |
 
 Everything runs locally – no server, account, subscription or database. Python 3.12+, PySide6, `qrcode`, Pillow, ReportLab, pypdf, pdfplumber, python-docx, openpyxl, FFmpeg (bundled via imageio-ffmpeg).
 Formerly "QR Studio Pro" (versions before 1.2.0). Your settings, presets and projects carry over.
@@ -118,3 +119,14 @@ src/utils/              validation · paths · logging
 tests/                  pytest (unit, export, UI offscreen) – decodes exports with OpenCV as an independent scanner
 packaging/ scripts/ docs/
 ```
+
+
+## Media Downloader notes
+- Needs internet; works only for **public** links. Private, members-only, age-restricted or DRM-protected content is not supported and is never bypassed.
+- Download only what you own or may keep; platform terms and copyright law apply. The window asks you to confirm this each time.
+- Sites change often. If a platform stops working, update to the newest TL Studio Pro (it ships a current yt-dlp).
+
+## AI Agent notes
+- Get a key at console.anthropic.com. It is saved in the app's data folder (`ai.json`, readable only by you) and sent only to api.anthropic.com. Usage is billed by Anthropic to your account.
+- Your messages and tool results (file names, short results) go to Anthropic; the agent can only touch files inside the work folder, and you approve every action that writes or downloads.
+- Default model is `claude-sonnet-5-5`; change it in Settings. You can also set the `ANTHROPIC_API_KEY` environment variable instead of saving a key.

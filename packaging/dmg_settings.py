@@ -1,6 +1,6 @@
 """dmgbuild settings: drag-and-drop installer window.
 
-    dmgbuild -s packaging/dmg_settings.py -D app="dist/TL Studio Pro.app" "TL Studio Pro" dist/TLStudioPro-1.2.0-<arch>.dmg
+    dmgbuild -s packaging/dmg_settings.py -D app="dist/TL Studio Pro.app" "TL Studio Pro" dist/TLStudioPro-1.3.0-<arch>.dmg
 """
 import os
 
