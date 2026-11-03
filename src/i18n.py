@@ -175,14 +175,14 @@ KM: dict[str, str] = {
     "New chat": "ការជជែកថ្មី", "Send": "ផ្ញើ", "Stop": "ឈប់", "Work folder:": "ថតការងារ៖", "Work folder": "ថតការងារ", "Change…": "ប្តូរ…",
     "Open": "បើក", "You": "អ្នក", "Tool": "ឧបករណ៍", "Error": "កំហុស", "Thinking…": "កំពុងគិត…", "Stopping…": "កំពុងឈប់…", "Running": "កំពុងដំណើរការ",
     "Allow this action?": "អនុញ្ញាតសកម្មភាពនេះឬទេ?",
-    "Add your Claude API key in Settings to start chatting.": "បន្ថែមកូនសោ Claude API របស់អ្នកក្នុងការកំណត់ ដើម្បីចាប់ផ្តើមជជែក។",
-    "That does not look like a Claude API key (it starts with sk-ant-).": "នេះមិនមែនជាកូនសោ Claude API ទេ (វាចាប់ផ្តើមដោយ sk-ant-)។",
+    "Add your Groq API key in Settings to start chatting.": "បន្ថែមកូនសោ Groq API របស់អ្នកក្នុងការកំណត់ ដើម្បីចាប់ផ្តើមជជែក។",
+    "That does not look like a Groq API key (it starts with gsk_).": "នេះមិនមែនជាកូនសោ Groq API ទេ (វាចាប់ផ្តើមដោយ gsk_)។",
     "The work folder does not exist.": "ថតការងារមិនមានទេ។",
-    "Use your own Claude API key (from console.anthropic.com). It is stored only on this computer and sent only to Anthropic.":
-        "ប្រើកូនសោ Claude API ផ្ទាល់ខ្លួនរបស់អ្នក (ពី console.anthropic.com)។ វាត្រូវបានរក្សាទុកតែលើកុំព្យូទ័រនេះ ហើយផ្ញើទៅ Anthropic តែប៉ុណ្ណោះ។",
+    "Use your own Groq API key (from console.groq.com/keys). It is stored only on this computer and sent only to Groq.":
+        "ប្រើកូនសោ Groq API ផ្ទាល់ខ្លួនរបស់អ្នក (ពី console.groq.com/keys)។ វាត្រូវបានរក្សាទុកតែលើកុំព្យូទ័រនេះ ហើយផ្ញើទៅ Groq តែប៉ុណ្ណោះ។",
     "Ask in plain words, for example: make a QR code for https://example.com": "សួរជាពាក្យធម្មតា ឧទាហរណ៍៖ បង្កើត QR code សម្រាប់ https://example.com",
-    "Your messages and the tool results are sent to Anthropic using your own API key. File contents are not sent unless a tool reads them. The agent can only use files inside the work folder, and asks before it writes or downloads.":
-        "សាររបស់អ្នក និងលទ្ធផលឧបករណ៍ត្រូវបានផ្ញើទៅ Anthropic ដោយប្រើកូនសោ API របស់អ្នក។ មាតិកាឯកសារមិនត្រូវបានផ្ញើទេ លុះត្រាតែឧបករណ៍អានវា។ ភ្នាក់ងារប្រើបានតែឯកសារក្នុងថតការងារ ហើយសួរមុនពេលសរសេរ ឬទាញយក។",
+    "Your messages and the tool results are sent to Groq (groq.com) using your own API key. File contents are not sent unless a tool reads them. The agent can only use files inside the work folder, and asks before it writes or downloads.":
+        "សាររបស់អ្នក និងលទ្ធផលឧបករណ៍ត្រូវបានផ្ញើទៅ Groq (groq.com) ដោយប្រើកូនសោ API របស់អ្នក។ មាតិកាឯកសារមិនត្រូវបានផ្ញើទេ លុះត្រាតែឧបករណ៍អានវា។ ភ្នាក់ងារប្រើបានតែឯកសារក្នុងថតការងារ ហើយសួរមុនពេលសរសេរ ឬទាញយក។",
     "Hi! Tell me what to do with your files: make QR codes, convert Excel/Word/PDF, convert pictures or videos, fill PDF forms, or download media you have the right to keep. I will ask before I change anything.":
         "សួស្តី! ប្រាប់ខ្ញុំថាត្រូវធ្វើអ្វីជាមួយឯកសាររបស់អ្នក៖ បង្កើត QR កូដ បម្លែង Excel/Word/PDF បម្លែងរូបភាព ឬវីដេអូ បំពេញទម្រង់ PDF ឬទាញយកមេឌៀដែលអ្នកមានសិទ្ធិរក្សាទុក។ ខ្ញុំនឹងសួរមុនពេលផ្លាស់ប្តូរអ្វីមួយ។",
 }

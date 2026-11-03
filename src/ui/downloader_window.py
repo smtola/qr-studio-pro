@@ -93,7 +93,7 @@ class DownloaderWindow(QMainWindow):
         self.setCentralWidget(root)
 
         self.out_btn.clicked.connect(self._pick)
-        self.run_btn.clicked.connect(self.start)
+        self.run_btn.clicked.connect(lambda _checked=False: self.start())
         self.cancel_btn.clicked.connect(self._cancel.set)
         self.open_btn.clicked.connect(self._open)
         self.agree.toggled.connect(self._refresh)
@@ -136,7 +136,8 @@ class DownloaderWindow(QMainWindow):
         self.info.setText(text)
 
     # ---- run
-    def start(self, downloader=DL.download) -> None:
+    def start(self, downloader=None) -> None:
+        downloader = downloader or DL.download
         links = self.links()
         if not links or self._busy or not self.agree.isChecked():
             return

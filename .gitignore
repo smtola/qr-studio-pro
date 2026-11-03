@@ -6,3 +6,9 @@ dist/
 .pytest_cache/
 tests/.userdata/
 packaging/version_info.txt
+venvvenv/
+.venv/
+.env
+.env.*
+venv/
+venv/

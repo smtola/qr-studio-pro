@@ -1,4 +1,4 @@
-"""AI Agent: a chat that can run TL Studio Pro's tools, using the user's own Claude API key."""
+"""AI Agent: a chat that can run TL Studio Pro's tools, using the user's own Groq API key."""
 from __future__ import annotations
 
 import html
@@ -12,7 +12,7 @@ from PySide6.QtWidgets import (QDialog, QDialogButtonBox, QFileDialog, QHBoxLayo
 
 from ..ai import keystore
 from ..ai.agent import run_turn
-from ..ai.client import AIError, ClaudeClient
+from ..ai.client import AIError, GroqClient
 from ..ai.tools import Toolbox
 from ..i18n import tr
 from ..services.app_prefs import AppPrefs
@@ -21,7 +21,7 @@ from .widgets import form, muted
 
 log = get_logger("ai-ui")
 
-PRIVACY = ("Your messages and the tool results are sent to Anthropic using your own API key. File contents are not sent "
+PRIVACY = ("Your messages and the tool results are sent to Groq (groq.com) using your own API key. File contents are not sent "
            "unless a tool reads them. The agent can only use files inside the work folder, and asks before it writes or downloads.")
 
 
@@ -55,13 +55,13 @@ class SettingsDialog(QDialog):
         super().__init__(parent)
         self.setWindowTitle(tr("AI settings"))
         lay = QVBoxLayout(self)
-        lay.addWidget(muted(tr("Use your own Claude API key (from console.anthropic.com). It is stored only on this computer "
-                               "and sent only to Anthropic.")))
+        lay.addWidget(muted(tr("Use your own Groq API key (from console.groq.com/keys). It is stored only on this computer "
+                               "and sent only to Groq.")))
         f = form()
         self.key = QLineEdit()
         self.key.setEchoMode(QLineEdit.EchoMode.Password)
         self.key.setAccessibleName("API key")
-        self.key.setPlaceholderText(keystore.mask(keystore.get_key()) or "sk-ant-…")
+        self.key.setPlaceholderText(keystore.mask(keystore.get_key()) or "gsk_…")
         self.model = QLineEdit(keystore.get_model())
         self.model.setAccessibleName("Model")
         f.addRow(tr("API key"), self.key)
@@ -80,7 +80,7 @@ class SettingsDialog(QDialog):
     def _save(self) -> None:
         k = self.key.text().strip()
         if k and not keystore.looks_valid(k):
-            self.err.setText(tr("That does not look like a Claude API key (it starts with sk-ant-)."))
+            self.err.setText(tr("That does not look like a Groq API key (it starts with gsk_)."))
             return
         keystore.save(k if k else None, self.model.text())
         self.accept()
@@ -88,14 +88,14 @@ class SettingsDialog(QDialog):
     def _remove(self) -> None:
         keystore.clear_key()
         self.key.clear()
-        self.key.setPlaceholderText("sk-ant-…")
+        self.key.setPlaceholderText("gsk_…")
 
 
 class AIWindow(QMainWindow):
     def __init__(self, prefs: AppPrefs, client_factory=None, confirm=None):
         super().__init__()
         self.prefs = prefs
-        self.client_factory = client_factory or (lambda: ClaudeClient(keystore.get_key(), keystore.get_model()))
+        self.client_factory = client_factory or (lambda: GroqClient(keystore.get_key(), keystore.get_model()))
         self._confirm_override = confirm
         self.setWindowTitle("AI Agent")
         self.resize(860, 700)
@@ -191,7 +191,7 @@ class AIWindow(QMainWindow):
     def _refresh(self) -> None:
         has_key = bool(keystore.get_key())
         self.key_note.setVisible(not has_key)
-        self.key_note.setText(tr("Add your Claude API key in Settings to start chatting."))
+        self.key_note.setText(tr("Add your Groq API key in Settings to start chatting."))
         self.send_btn.setEnabled(has_key and not self._busy)
 
     def _say(self, text: str) -> None:

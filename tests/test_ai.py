@@ -8,7 +8,7 @@ import pytest
 
 from src.ai import keystore
 from src.ai.agent import MAX_HISTORY, run_turn, trim_history
-from src.ai.client import AIError, ClaudeClient
+from src.ai.client import AIError, GroqClient
 from src.ai.tools import Toolbox
 from src.convert import downloader as DL
 from src.convert.common import ConvertError
@@ -26,36 +26,45 @@ def fake(responses):
     return transport
 
 
-def msg(blocks, stop="end_turn"):
-    return 200, {"content": blocks, "stop_reason": stop}
+KEY = "gsk_abcdefghijklmnopqrstuvwxyz"
+
+
+def reply(text="", calls=None):
+    m = {"role": "assistant", "content": text}
+    if calls:
+        m["tool_calls"] = [{"id": f"c{i}", "type": "function", "function": {"name": n, "arguments": json.dumps(a) if isinstance(a, dict) else a}}
+                           for i, (n, a) in enumerate(calls)]
+    return 200, {"choices": [{"message": m, "finish_reason": "tool_calls" if calls else "stop"}]}
 
 
 def test_keystore_roundtrip_and_mask(tmp_path, monkeypatch):
     monkeypatch.setenv("QRSP_DATA_DIR", str(tmp_path))
-    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("GROQ_API_KEY", raising=False)
     assert keystore.get_key() == "" and keystore.get_model() == keystore.DEFAULT_MODEL
-    keystore.save("sk-ant-abcdefghijklmnopqrstuvwxyz", "m1")
-    assert keystore.get_key().startswith("sk-ant-") and keystore.get_model() == "m1"
+    keystore.save(KEY, "m1")
+    assert keystore.get_key().startswith("gsk_") and keystore.get_model() == "m1"
     assert "abcdefgh" not in keystore.mask(keystore.get_key())
     keystore.clear_key()
     assert keystore.get_key() == "" and keystore.get_model() == "m1"
-    assert keystore.looks_valid("sk-ant-abcdefghijklmnopqrstuvwxyz") and not keystore.looks_valid("hello")
+    assert keystore.looks_valid(KEY) and not keystore.looks_valid("hello") and not keystore.looks_valid("sk-ant-abcdefghijklmnopqrstuvwxyz")
 
 
-@pytest.mark.parametrize("status,word", [(401, "rejected"), (429, "limiting"), (529, "busy"), (404, "model")])
+@pytest.mark.parametrize("status,word", [(401, "rejected"), (429, "limiting"), (503, "busy"), (404, "model")])
 def test_client_errors_are_friendly(status, word):
-    c = ClaudeClient("sk-ant-x", "m", transport=fake([(status, {"error": {"message": "x"}})]))
+    c = GroqClient(KEY, "m", transport=fake([(status, {"error": {"message": "x"}})]))
     with pytest.raises(AIError, match=word):
         c.create([{"role": "user", "content": "hi"}])
 
 
 def test_client_requires_key_and_sends_headers():
     with pytest.raises(AIError):
-        ClaudeClient("", "m", transport=fake([])).create([])
-    t = fake([msg([{"type": "text", "text": "ok"}])])
-    ClaudeClient("sk-ant-k", "m", transport=t).create([{"role": "user", "content": "hi"}], system="s")
+        GroqClient("", "m", transport=fake([])).create([])
+    t = fake([reply("ok")])
+    r = GroqClient(KEY, "m", transport=t).create([{"role": "user", "content": "hi"}], system="s", tools=[{"type": "function"}])
     url, headers, body = t.calls[0]
-    assert url.startswith("https://api.anthropic.com/") and headers["x-api-key"] == "sk-ant-k" and body["system"] == "s"
+    assert url == "https://api.groq.com/openai/v1/chat/completions" and headers["authorization"] == f"Bearer {KEY}"
+    assert body["messages"][0] == {"role": "system", "content": "s"} and body["tool_choice"] == "auto"
+    assert r["message"]["content"] == "ok"
 
 
 def test_toolbox_sandbox_blocks_escape(tmp_path):
@@ -105,35 +114,42 @@ def test_download_asks_with_rights_notice_and_uses_downloader(tmp_path, monkeypa
 def test_agent_loop_runs_tool_then_answers(tmp_path):
     tb = Toolbox(tmp_path, lambda _t: True)
     t = fake([
-        msg([{"type": "text", "text": "Making it."}, {"type": "tool_use", "id": "t1", "name": "make_qr",
-                                                      "input": {"type": "url", "value": "https://example.com", "filename": "q.png"}}], "tool_use"),
-        msg([{"type": "text", "text": "Done: q.png"}]),
+        reply("Making it.", [("make_qr", {"type": "url", "value": "https://example.com", "filename": "q.png"})]),
+        reply("Done: q.png"),
     ])
     events, hist = [], []
-    out = run_turn(ClaudeClient("sk-ant-k", "m", transport=t), tb, hist, "make a qr", lambda k, v: events.append(k))
+    out = run_turn(GroqClient(KEY, "m", transport=t), tb, hist, "make a qr", lambda k, v: events.append(k))
     assert out == "Done: q.png" and (tmp_path / "q.png").exists()
     assert events == ["text", "tool", "result"]
-    assert hist[2]["content"][0]["type"] == "tool_result" and hist[2]["content"][0]["is_error"] is False
-    assert t.calls[0][2]["tools"] and "system" in t.calls[0][2]
+    assert hist[2]["role"] == "tool" and hist[2]["tool_call_id"] == "c0" and hist[2]["content"].startswith("Created")
+    body = t.calls[0][2]
+    assert body["tools"][0]["type"] == "function" and body["messages"][0]["role"] == "system"
+
+
+def test_agent_bad_json_arguments_become_tool_error(tmp_path):
+    tb = Toolbox(tmp_path, lambda _t: True)
+    t = fake([reply("", [("make_qr", "{not json")]), reply("sorry")])
+    hist = []
+    assert run_turn(GroqClient(KEY, "m", transport=t), tb, hist, "x") == "sorry"
+    assert hist[2]["content"].startswith("Error:") and not list(tmp_path.iterdir())
 
 
 def test_agent_stops_after_max_steps_and_on_cancel(tmp_path):
     tb = Toolbox(tmp_path, lambda _t: True)
-    loop = (200, {"content": [{"type": "tool_use", "id": "x", "name": "list_files", "input": {}}], "stop_reason": "tool_use"})
-    t = fake([loop] * 20)
-    out = run_turn(ClaudeClient("sk-ant-k", "m", transport=t), tb, [], "go")
+    t = fake([reply("", [("list_files", {})]) for _ in range(20)])
+    out = run_turn(GroqClient(KEY, "m", transport=t), tb, [], "go")
     assert "stopped" in out.lower() and len(t.calls) == 8
     ev = threading.Event()
     ev.set()
-    assert run_turn(ClaudeClient("sk-ant-k", "m", transport=fake([])), tb, [], "go", cancel=ev) == "Stopped."
+    assert run_turn(GroqClient(KEY, "m", transport=fake([])), tb, [], "go", cancel=ev) == "Stopped."
 
 
 def test_trim_history_keeps_pairs():
     h = []
     for i in range(30):
         h += [{"role": "user", "content": f"q{i}"},
-              {"role": "assistant", "content": [{"type": "tool_use", "id": str(i), "name": "n", "input": {}}]},
-              {"role": "user", "content": [{"type": "tool_result", "tool_use_id": str(i), "content": "r"}]},
-              {"role": "assistant", "content": [{"type": "text", "text": "a"}]}]
+              {"role": "assistant", "content": "", "tool_calls": [{"id": str(i), "type": "function", "function": {"name": "n", "arguments": "{}"}}]},
+              {"role": "tool", "tool_call_id": str(i), "content": "r"},
+              {"role": "assistant", "content": "a"}]
     trim_history(h)
     assert len(h) <= MAX_HISTORY + 4 and h[0]["role"] == "user" and isinstance(h[0]["content"], str)

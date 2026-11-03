@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#86644a"/>
+      <stop offset="1" stop-color="#76543c"/>
+    </linearGradient>
+    <clipPath id="sq"><rect x="64" y="64" width="896" height="896" rx="214"/></clipPath>
+  </defs>
+  <rect x="64" y="64" width="896" height="896" rx="214" fill="url(#bg)"/>
+  <rect x="64" y="64" width="896" height="896" rx="214" fill="none" stroke="#f2f3c6" stroke-opacity="0.25" stroke-width="6"/>
+  <!-- T -->
+  <rect x="214" y="262" width="350" height="92" rx="26" fill="#86e4f9"/>
+  <rect x="343" y="262" width="92" height="388" rx="26" fill="#86e4f9"/>
+  <!-- L -->
+  <rect x="598" y="262" width="92" height="388" rx="26" fill="#f2f3c6"/>
+  <rect x="598" y="558" width="236" height="92" rx="26" fill="#f2f3c6"/>
+  <circle cx="770" cy="352" r="34" fill="#86e4f9"/>
+  <!-- divider + caption -->
+  <rect x="332" y="722" width="360" height="6" rx="3" fill="#86e4f9" opacity="0.9"/>
+  <text x="522" y="814" text-anchor="middle" font-family="Montserrat, Inter, 'DejaVu Sans', Arial, sans-serif" font-weight="700" font-size="74" letter-spacing="20" fill="#f2f3c6">STUDIO PRO</text>
+</svg>

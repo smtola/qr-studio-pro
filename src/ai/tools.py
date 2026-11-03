@@ -25,8 +25,8 @@ class ToolError(Exception):
 
 
 def _schema(name: str, description: str, props: dict, required: list[str]) -> dict:
-    return {"name": name, "description": description,
-            "input_schema": {"type": "object", "properties": props, "required": required}}
+    return {"type": "function", "function": {"name": name, "description": description,
+                                             "parameters": {"type": "object", "properties": props, "required": required}}}
 
 
 S = {"type": "string"}

@@ -219,21 +219,20 @@ def test_downloader_window_flow(hub, qapp, tmp_path, monkeypatch):
 def test_ai_window_chat_with_mock_api(hub, qapp, tmp_path, monkeypatch):
     import json
     from src.ai import keystore
-    from src.ai.client import ClaudeClient
+    from src.ai.client import GroqClient
     from src.ui.ai_window import AIWindow
-    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv("GROQ_API_KEY", raising=False)
     w = AIWindow(hub.prefs)
     w.work_dir = str(tmp_path)
     assert not w.send_btn.isEnabled() and not w.key_note.isHidden()      # no key yet
-    keystore.save("sk-ant-abcdefghijklmnopqrstuvwxyz")
+    keystore.save("gsk_abcdefghijklmnopqrstuvwxyz")
     w._refresh()
     assert w.send_btn.isEnabled()
-    replies = [
-        (200, {"content": [{"type": "tool_use", "id": "1", "name": "make_qr",
-                            "input": {"type": "url", "value": "https://example.com", "filename": "z.png"}}], "stop_reason": "tool_use"}),
-        (200, {"content": [{"type": "text", "text": "All done <b>"}], "stop_reason": "end_turn"}),
-    ]
-    w.client_factory = lambda: ClaudeClient("sk-ant-k", "m", transport=lambda *a: (replies[0][0], json.dumps(replies.pop(0)[1]).encode()))
+    call = {"id": "1", "type": "function", "function": {"name": "make_qr", "arguments": json.dumps(
+        {"type": "url", "value": "https://example.com", "filename": "z.png"})}}
+    replies = [{"choices": [{"message": {"role": "assistant", "content": "", "tool_calls": [call]}, "finish_reason": "tool_calls"}]},
+               {"choices": [{"message": {"role": "assistant", "content": "All done <b>"}, "finish_reason": "stop"}]}]
+    w.client_factory = lambda: GroqClient("gsk_k", "m", transport=lambda *a: (200, json.dumps(replies.pop(0)).encode()))
     w._confirm_override = lambda t: True
     w.input.setPlainText("make qr")
     w.send()
@@ -241,20 +240,37 @@ def test_ai_window_chat_with_mock_api(hub, qapp, tmp_path, monkeypatch):
     assert (tmp_path / "z.png").exists()
     text = w.chat.toPlainText()
     assert "make qr" in text and "All done <b>" in text            # HTML is escaped, not rendered
-    assert "sk-ant" not in text
+    assert "gsk_" not in text
     w.close()
 
 
 def test_ai_window_shows_friendly_error_and_keeps_history_clean(hub, qapp, tmp_path):
     from src.ai import keystore
-    from src.ai.client import ClaudeClient
+    from src.ai.client import GroqClient
     from src.ui.ai_window import AIWindow
-    keystore.save("sk-ant-abcdefghijklmnopqrstuvwxyz")
+    keystore.save("gsk_abcdefghijklmnopqrstuvwxyz")
     w = AIWindow(hub.prefs)
     w.work_dir = str(tmp_path)
-    w.client_factory = lambda: ClaudeClient("sk-ant-k", "m", transport=lambda *a: (401, b'{"error":{"message":"bad"}}'))
+    w.client_factory = lambda: GroqClient("gsk_k", "m", transport=lambda *a: (401, b'{"error":{"message":"bad"}}'))
     w.input.setPlainText("hi")
     w.send()
     assert pump(qapp, 10, lambda: not w._busy)
     assert "rejected" in w.chat.toPlainText() and w.history == [] and w.send_btn.isEnabled()
     w.close()
+
+
+def test_downloader_button_click_does_not_pass_bool(hub, qapp, tmp_path, monkeypatch):
+    """Regression: clicked(bool) must not be taken as the downloader function."""
+    w = hub.open_tool("download")
+    w.urls.setPlainText("https://youtu.be/abc")
+    w.agree.setChecked(True)
+    w.out.setText(str(tmp_path))
+    from src.convert import downloader as DL
+    from src.convert.common import ConvertError
+
+    def boom(*a, **k):
+        raise ConvertError("stub")
+    monkeypatch.setattr(DL, "download", boom)
+    w.run_btn.click()
+    assert pump(qapp, 10, lambda: not w._busy)
+    assert "stub" in w.info.text() and "not callable" not in w.info.text()
