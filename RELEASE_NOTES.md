@@ -1,4 +1,4 @@
-## TL Studio Pro 1.3.1
+## TL Studio Pro 1.3.0
 - **Download Image & Video** – paste public links from YouTube, TikTok, Facebook, Instagram or X and save video (up to 1080p), audio (MP3/M4A) or a picture. Private and protected content is not supported.
 - **AI Agent** – chat in plain words and let the agent make QR codes, convert documents, pictures and videos, fill PDF forms or download media. Bring your own Groq API key; it works only in a folder you choose and asks before every change.
 - Khmer text for both new screens (draft; feedback welcome).
