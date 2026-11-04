@@ -10,12 +10,6 @@ numpy==2.5.3
 # Converters (Convert Studio / Convert Media / PDF to Form)
 pypdf==6.17.0
 pdfplumber==0.11.10
-# Pulled in by pdfminer.six. 50.x has no macOS x86_64 wheel, so the Intel build compiled it
-# against Homebrew OpenSSL and the bundled libssl.3.dylib no longer matched.
-cryptography==48.0.1
-# Pulled in by pdfminer.six. 50.x has no macOS x86_64 wheel, so the Intel build compiled it
-# against Homebrew OpenSSL and the bundled libssl.3.dylib no longer matched.
-cryptography==48.0.1
 # Pulled in by pdfminer.six. Pinned below 50: 50.x ships no macOS x86_64 wheel, so the Intel build compiled it
 # against Homebrew OpenSSL and the bundled libssl.3.dylib no longer matched (Symbol not found: _SSL_get0_group_name).
 # 48.x has universal2 wheels with OpenSSL statically linked.

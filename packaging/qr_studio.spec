@@ -32,7 +32,7 @@ for pkg in ("imageio_ffmpeg", "pypdfium2", "pypdfium2_raw", "docx", "pdfminer", 
 hiddenimports = collect_submodules("yt_dlp") + collect_submodules("pdfminer") + collect_submodules("pdfplumber") + [
     "pypdf", "pypdfium2", "docx", "openpyxl", "imageio_ffmpeg", "lxml", "lxml.etree", "cv2", "numpy", "PySide6.QtSvg", "reportlab.pdfbase._fontdata", "reportlab.graphics.barcode"]
 excludes = [
-    "pytest", "tkinter", "unittest", "matplotlib", "scipy", "pandas",   # dev / unused
+    "pytest", "tkinter", "pycparser.lextab", "pycparser.yacctab", "unittest", "matplotlib", "scipy", "pandas",   # dev / unused
     "PySide6.QtWebEngineCore", "PySide6.QtWebEngineWidgets", "PySide6.QtQml", "PySide6.QtQuick",
     "PySide6.Qt3DCore", "PySide6.QtMultimedia", "PySide6.QtNetwork", "PySide6.QtSql", "PySide6.QtPdf",
 ]
