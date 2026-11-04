@@ -8,7 +8,7 @@ DATA_DIR_WIN = "QRStudioPro"
 DATA_DIR_MAC = "QR Studio Pro"
 DATA_DIR_LINUX = "qr-studio-pro"
 APP_ID = "com.qrstudio.qrstudiopro"
-VERSION = "1.3.0"
+VERSION = "1.3.1"
 COPYRIGHT = "Copyright (c) 2026 TL Studio"
 PROJECT_EXT = ".qrsp"
 
@@ -16,4 +16,4 @@ PROJECT_EXT = ".qrsp"
 # HTTPS address of the update feed (update.json, see docs/UPDATES.md). Leave empty to disable update
 # checks. It can also be overridden at run time with the QRSP_UPDATE_URL environment variable.
 # Example: "https://github.com/<you>/<repo>/releases/latest/download/update.json"
-UPDATE_MANIFEST_URL = ""
+UPDATE_MANIFEST_URL = "https://github.com/smtola/qr-studio-pro/releases/update.json"

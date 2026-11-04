@@ -161,7 +161,7 @@ KM: dict[str, str] = {
     "Clean Minimal": "សាមញ្ញស្អាត", "Restaurant Menu": "ម៉ឺនុយភោជនីយដ្ឋាន", "Business Card": "ប័ណ្ណអាជីវកម្ម", "Wi-Fi Poster": "ផ្ទាំងប័ទ្ម Wi-Fi",
     "Event Ticket": "សំបុត្រព្រឹត្តិការណ៍", "Social Follow": "តាមដានបណ្តាញសង្គម", "Ocean Gradient": "ក្រឌីយ៉ង់មហាសមុទ្រ",
     "Fresh Green": "បៃតងស្រស់", "Sunset": "ថ្ងៃលិច", "Bold Sticker": "ស្ទីគ័រដិត",
-    # downloader & AI agent (added in 1.3.0; draft Khmer, needs native review)
+    # downloader & AI agent (added in 1.3.1; draft Khmer, needs native review)
     "Paste public links from YouTube, TikTok, Facebook, Instagram or X (one per line).":
         "បិទភ្ជាប់តំណសាធារណៈពី YouTube, TikTok, Facebook, Instagram ឬ X (មួយជួរមួយតំណ)។",
     "Only download content that you own, that is in the public domain, or that you have permission to keep. Platform terms of service may forbid downloads, and copyright law applies.":
